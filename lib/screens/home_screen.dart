@@ -1,5 +1,8 @@
+// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
+import '../widgets/alfred_fab.dart';
 import 'modules_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -59,13 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.grey[600],
                       borderRadius: BorderRadius.circular(4)),
                 ),
-                const Text(
-                  'Adicionar rapidamente',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                Text('Adicionar rapidamente',
+                    style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 TextField(
                   autofocus: true,
@@ -77,9 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       detectedModule = detectModule(val);
                     });
                   },
-                  onSubmitted: (_) {
-                    // optional: submit on enter
-                  },
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -87,7 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Chip(
                       label: Text(detectedModule,
                           style: const TextStyle(fontWeight: FontWeight.bold)),
-                      backgroundColor: Colors.blue.shade50,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primary.withOpacity(0.12),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -95,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         text,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.grey),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     )
                   ],
@@ -141,7 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _toggleDone(dynamic key) {
-    final Map item = Map<String, dynamic>.from(box.get(key));
+    final raw = box.get(key);
+    if (raw == null) return;
+    final Map item = Map<String, dynamic>.from(raw as Map);
     item['isDone'] = !(item['isDone'] as bool);
     box.put(key, item);
   }
@@ -202,91 +203,117 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dateLabel = DateFormat('EEEE, d MMMM', 'pt_BR').format(DateTime.now());
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Alfred - Hoje'),
-        centerTitle: true,
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Hoje', style: Theme.of(context).textTheme.titleLarge),
+          Text(dateLabel, style: Theme.of(context).textTheme.bodySmall),
+        ]),
         actions: [
           IconButton(
             tooltip: 'Módulos',
             icon: const Icon(Icons.view_list),
-            onPressed: () =>
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ModulesScreen())),
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const ModulesScreen())),
           ),
-          // mantêm os outros ícones (Relatório/Foco) se quiser
+          IconButton(
+            tooltip: 'Relatório',
+            icon: const Icon(Icons.bar_chart_outlined),
+            onPressed: () {}, // implementar relatório
+          ),
+          IconButton(
+            tooltip: 'Foco',
+            icon: const Icon(Icons.center_focus_strong),
+            onPressed: () {}, // implementar modo foco
+          ),
         ],
       ),
-      body: ValueListenableBuilder(
-        valueListenable: box.listenable(),
-        builder: (context, Box b, _) {
-          final items = _itemsForToday(b);
-          if (items.isEmpty) {
-            return const Center(
-                child: Text('Nenhum registro para hoje. Toque em + para adicionar.'));
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 6),
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final key = item['_key'];
-              final title = item['title'] as String? ?? '';
-              final module = item['module'] as String? ?? '';
-              final isDone = item['isDone'] as bool? ?? false;
-              final ts = item['_ts'] as DateTime;
-              final timeLabel = '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
-
-              return Dismissible(
-                key: Key(key.toString()),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  color: Colors.redAccent,
-                  child: const Icon(Icons.delete, color: Colors.white),
-                ),
-                onDismissed: (_) => _deleteItem(key),
-                child: ListTile(
-                  leading: GestureDetector(
-                    onTap: () => _toggleDone(key),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: isDone ? Colors.green : Colors.transparent,
-                        border: Border.all(
-                            color: isDone ? Colors.green : Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: isDone
-                          ? const Icon(Icons.check, color: Colors.white, size: 20)
-                          : const Icon(Icons.circle_outlined, size: 20),
-                    ),
+      floatingActionButton: AlfredFab(onTap: _showQuickAdd),
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: box.listenable(),
+          builder: (context, Box b, _) {
+            final items = _itemsForToday(b);
+            if (items.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'Nenhum registro para hoje. Toque em + para adicionar.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
-                  title: Text(
-                    title,
-                    style: TextStyle(
-                        decoration:
-                            isDone ? TextDecoration.lineThrough : TextDecoration.none,
-                        color: isDone ? Colors.grey : Colors.black,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(module),
-                  trailing: Text(timeLabel,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  onTap: () {
-                    // future: open detail / edit
-                  },
                 ),
               );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showQuickAdd,
-        child: const Icon(Icons.add),
+            }
+
+            return ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 6),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                final key = item['_key'];
+                final title = item['title'] as String? ?? '';
+                final module = item['module'] as String? ?? '';
+                final isDone = item['isDone'] as bool? ?? false;
+                final ts = item['_ts'] as DateTime;
+                final timeLabel =
+                    '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
+
+                return Dismissible(
+                  key: Key(key.toString()),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    color: Colors.redAccent,
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  onDismissed: (_) => _deleteItem(key),
+                  child: Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      leading: GestureDetector(
+                        onTap: () => _toggleDone(key),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: isDone ? Colors.green : Colors.transparent,
+                            border: Border.all(
+                                color: isDone ? Colors.green : Colors.grey.shade400),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: isDone
+                              ? const Icon(Icons.check, color: Colors.white, size: 20)
+                              : const Icon(Icons.circle_outlined, size: 20),
+                        ),
+                      ),
+                      title: Text(
+                        title,
+                        style: TextStyle(
+                            decoration:
+                                isDone ? TextDecoration.lineThrough : TextDecoration.none,
+                            color: isDone ? Colors.grey : Theme.of(context).textTheme.bodyLarge!.color,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(module),
+                      trailing: Text(timeLabel,
+                          style: Theme.of(context).textTheme.bodySmall),
+                      onTap: () {
+                        // future: open detail / edit
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
