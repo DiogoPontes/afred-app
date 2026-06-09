@@ -30,6 +30,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
   int? _advQuarter; // 1..4
   int? _advSemester; // 1..2
 
+  // Dropdown control: fixed static value (must be one of periodOptions)
+  String _dropdownValue = 'Hoje';
+  // dynamic label shown beside the dropdown (can be "Mês: Jun 2026", etc.)
+  String _selectedPeriodOption = 'Hoje';
+
   final List<String> paymentMethods = ['Dinheiro/Pix', 'Débito', 'Crédito'];
 
   @override
@@ -40,6 +45,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
       final defaults = ['Alimentação', 'Transporte', 'Casa', 'Lazer', 'Saúde', 'Outros'];
       for (var c in defaults) categoriesBox.add(c);
     }
+
+    // inicializa label inicial conforme estado
+    _selectedPeriodOption = _labelForPeriod();
+    _dropdownValue = 'Hoje';
   }
 
   // ---------- Datas e utilitários ----------
@@ -253,7 +262,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _customRange = DateTimeRange(start: _startOfDay(picked.start), end: _endOfDay(picked.end));
         _period = PeriodPreset.custom;
         _advanced = AdvancedPeriod.none;
+        _selectedPeriodOption = _labelForPeriod();
       });
+    } else {
+      // se cancelou, restaura label
+      setState(() { _selectedPeriodOption = _labelForPeriod(); });
     }
   }
 
@@ -333,6 +346,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         });
         break;
     }
+
+    // atualiza label após ação
+    setState(() {
+      _selectedPeriodOption = _labelForPeriod();
+    });
   }
 
   Future<void> _pickMonthNamed() async {
@@ -380,10 +398,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advMonth = res['month'];
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
+        _advanced = AdvancedPeriod.monthNamed;
+        _selectedPeriodOption = _labelForPeriod();
       });
     } else {
       setState(() {
         _advanced = AdvancedPeriod.none;
+        _selectedPeriodOption = _labelForPeriod();
       });
     }
   }
@@ -420,9 +441,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advBimesterStart = res['start'];
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
+        _advanced = AdvancedPeriod.bimestre;
+        _selectedPeriodOption = _labelForPeriod();
       });
     } else {
-      setState(() { _advanced = AdvancedPeriod.none; });
+      setState(() { _advanced = AdvancedPeriod.none; _selectedPeriodOption = _labelForPeriod(); });
     }
   }
 
@@ -458,9 +481,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advQuarter = res['quarter'];
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
+        _advanced = AdvancedPeriod.trimestre;
+        _selectedPeriodOption = _labelForPeriod();
       });
     } else {
-      setState(() { _advanced = AdvancedPeriod.none; });
+      setState(() { _advanced = AdvancedPeriod.none; _selectedPeriodOption = _labelForPeriod(); });
     }
   }
 
@@ -496,9 +521,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advSemester = res['sem'];
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
+        _advanced = AdvancedPeriod.semestre;
+        _selectedPeriodOption = _labelForPeriod();
       });
     } else {
-      setState(() { _advanced = AdvancedPeriod.none; });
+      setState(() { _advanced = AdvancedPeriod.none; _selectedPeriodOption = _labelForPeriod(); });
     }
   }
 
@@ -526,9 +553,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advYear = res;
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
+        _advanced = AdvancedPeriod.year;
+        _selectedPeriodOption = _labelForPeriod();
       });
     } else {
-      setState(() { _advanced = AdvancedPeriod.none; });
+      setState(() { _advanced = AdvancedPeriod.none; _selectedPeriodOption = _labelForPeriod(); });
     }
   }
 
@@ -1065,6 +1094,17 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final total = _sumItems(items);
     final sumsByMethod = _sumByPaymentMethod(items);
 
+    // lista de opções para o dropdown único
+    final List<String> periodOptions = [
+      'Hoje',
+      'Semana',
+      'Mês (escolher)', // abre modal
+      'Trimestre',
+      'Semestre',
+      'Ano',
+      'Personalizado',
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Finanças'),
@@ -1106,36 +1146,44 @@ class _FinanceScreenState extends State<FinanceScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(children: [
-            DropdownButton<PeriodPreset>(
-              value: _period,
-              items: const [
-                DropdownMenuItem(value: PeriodPreset.today, child: Text('Hoje')),
-                DropdownMenuItem(value: PeriodPreset.week, child: Text('7 dias')),
-                DropdownMenuItem(value: PeriodPreset.month, child: Text('Mês')),
-                DropdownMenuItem(value: PeriodPreset.custom, child: Text('Personalizado')),
-              ],
-              onChanged: (v) {
+            // ---------- Dropdown usa _dropdownValue (valor fixo) ----------
+            DropdownButton<String>(
+              value: _dropdownValue,
+              items: periodOptions.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+              onChanged: (v) async {
                 if (v == null) return;
-                setState(() {
-                  _period = v;
-                  if (v != PeriodPreset.custom) _customRange = null;
-                });
-              },
-            ),
-            const SizedBox(width: 8),
-            DropdownButton<AdvancedPeriod>(
-              value: _advanced,
-              items: const [
-                DropdownMenuItem(value: AdvancedPeriod.none, child: Text('Avançado')),
-                DropdownMenuItem(value: AdvancedPeriod.monthNamed, child: Text('Mês (Jan, Fev...)')),
-                DropdownMenuItem(value: AdvancedPeriod.bimestre, child: Text('Bimestre')),
-                DropdownMenuItem(value: AdvancedPeriod.trimestre, child: Text('Trimestre')),
-                DropdownMenuItem(value: AdvancedPeriod.semestre, child: Text('Semestre')),
-                DropdownMenuItem(value: AdvancedPeriod.year, child: Text('Ano')),
-              ],
-              onChanged: (v) {
-                if (v == null) return;
-                _pickAdvancedOption(v);
+                // atualiza o valor do dropdown para um dos itens estáticos
+                setState(() { _dropdownValue = v; });
+
+                if (v == 'Hoje') {
+                  setState(() {
+                    _period = PeriodPreset.today;
+                    _advanced = AdvancedPeriod.none;
+                    _customRange = null;
+                    _selectedPeriodOption = _labelForPeriod();
+                  });
+                } else if (v == 'Semana') {
+                  setState(() {
+                    _period = PeriodPreset.week;
+                    _advanced = AdvancedPeriod.none;
+                    _customRange = null;
+                    _selectedPeriodOption = _labelForPeriod();
+                  });
+                } else if (v == 'Mês (escolher)') {
+                  // abre modal para escolher mês/ano — essa função já atualiza _selectedPeriodOption
+                  await _pickMonthNamed();
+                } else if (v == 'Trimestre') {
+                  await _pickQuarter();
+                } else if (v == 'Semestre') {
+                  await _pickSemester();
+                } else if (v == 'Ano') {
+                  await _pickYear();
+                } else if (v == 'Personalizado') {
+                  await _pickCustomRange();
+                } else {
+                  // fallback: restaura label
+                  setState(() { _selectedPeriodOption = _labelForPeriod(); });
+                }
               },
             ),
             const SizedBox(width: 8),
@@ -1152,6 +1200,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 _advanced = AdvancedPeriod.none;
                 _selectedCategory = null;
                 _search = '';
+                _selectedPeriodOption = _labelForPeriod();
+                _dropdownValue = 'Hoje';
               });
             }),
           ]),
