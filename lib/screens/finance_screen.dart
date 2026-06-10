@@ -769,17 +769,31 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 decoration: const InputDecoration(labelText: 'Categoria'),
               ),
               const SizedBox(height: 8),
+              // Dropdown do método de pagamento — showEditSeries (mostra campo parcelas apenas para Crédito)
               DropdownButtonFormField<String>(
                 value: selectedPaymentMethod,
                 items: paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (v) => setModal(() => selectedPaymentMethod = v ?? paymentMethods.first),
+                onChanged: (v) => setModal(() {
+                  selectedPaymentMethod = v ?? paymentMethods.first;
+                  // se não for crédito, garante que o número de parcelas vá para 1
+                  if (selectedPaymentMethod != 'Crédito') {
+                    installmentCtrl.text = '1';
+                  }
+                }),
                 decoration: const InputDecoration(labelText: 'Método de pagamento'),
               ),
               const SizedBox(height: 8),
               TextField(controller: amountCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total')),
               const SizedBox(height: 8),
-              TextField(controller: installmentCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Número de parcelas')),
-              const SizedBox(height: 8),
+              // Exibe o campo de parcelas APENAS quando for Crédito
+              if (selectedPaymentMethod == 'Crédito') ...[
+                TextField(
+                  controller: installmentCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Número de parcelas'),
+                ),
+                const SizedBox(height: 8),
+              ],
               Row(children: [
                 Expanded(child: OutlinedButton.icon(onPressed: () async {
                   final picked = await showDatePicker(context: ctx, initialDate: selectedDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
@@ -947,17 +961,34 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 decoration: const InputDecoration(labelText: 'Categoria'),
               ),
               const SizedBox(height: 10),
+              // Dropdown do método de pagamento — dentro do modal de _showAddOrEditExpense
               DropdownButtonFormField<String>(
                 value: selectedPaymentMethod,
                 items: paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (v) => setModal(() => selectedPaymentMethod = v ?? paymentMethods.first),
+                onChanged: (v) => setModal(() {
+                  selectedPaymentMethod = v ?? paymentMethods.first;
+                  // Se não for crédito, força parcelas = 1 para evitar uso indevido
+                  if (selectedPaymentMethod != 'Crédito') {
+                    installmentCtrl.text = '1';
+                  }
+                }),
                 decoration: const InputDecoration(labelText: 'Método de pagamento'),
               ),
               const SizedBox(height: 10),
               TextField(controller: amountCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
               const SizedBox(height: 10),
-              TextField(controller: installmentCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Número de parcelas', hintText: '1 = sem parcelamento')),
-              const SizedBox(height: 10),
+              // Exibe o campo de parcelas APENAS quando for Crédito
+              if (selectedPaymentMethod == 'Crédito') ...[
+                TextField(
+                  controller: installmentCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Número de parcelas',
+                    hintText: '1 = sem parcelamento (apenas crédito)',
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               Row(children: [
                 Expanded(child: OutlinedButton.icon(onPressed: () async {
                   final picked = await showDatePicker(context: ctx, initialDate: selectedDate, firstDate: DateTime(2000), lastDate: DateTime(2100));

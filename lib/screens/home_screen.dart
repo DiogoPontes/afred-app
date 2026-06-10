@@ -1,4 +1,6 @@
 // lib/screens/home_screen.dart
+import 'dart:collection';
+import 'focus_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -15,17 +17,27 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Box box;
 
+  // mapa de cores sutis por módulo
+  final Map<String, Color> _moduleColors = {
+    'Tarefas': Colors.blueGrey,
+    'Finanças': Colors.deepOrange,
+    'Exercício': Colors.green,
+    'Alimentação': Colors.pink,
+    'Estudos': Colors.indigo,
+    'Compromissos': Colors.teal,
+  };
+
   @override
   void initState() {
     super.initState();
-    box = Hive.box('alfred_box'); // já deveria ter sido aberto em main.dart
+    box = Hive.box('alfred_box'); 
   }
 
   String detectModule(String text) {
     final lower = text.toLowerCase();
     if (RegExp(r'gastei|r\$|reais|paguei|pagar|comprei').hasMatch(lower)) {
       return 'Finanças';
-    } else if (RegExp(r'corri|treino|academia|km|corrida|muscula').hasMatch(lower)) {
+    } else if (RegExp(r'corri|treino|academia|km|corrida|malhei|muscula').hasMatch(lower)) {
       return 'Exercício';
     } else if (RegExp(r'comi|almoç|jantar|lanche|pizza|refei').hasMatch(lower)) {
       return 'Alimentação';
@@ -37,9 +49,36 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Tarefas';
   }
 
+  Color _colorForModule(String module) {
+    if (_moduleColors.containsKey(module)) {
+      return _moduleColors[module]!;
+    }
+    final palette = [Colors.cyan, Colors.deepPurple, Colors.amber, Colors.lime, Colors.brown];
+    final idx = module.hashCode.abs() % palette.length;
+    return palette[idx];
+  }
+
+  List<String> _availableModules() {
+    final defaults = ['Tarefas', 'Finanças', 'Exercício', 'Alimentação', 'Estudos', 'Compromissos'];
+    final LinkedHashSet<String> set = LinkedHashSet<String>.from(defaults);
+
+    for (var key in box.keys) {
+      try {
+        final raw = box.get(key);
+        if (raw == null) continue;
+        final item = Map<String, dynamic>.from(raw as Map);
+        final m = (item['module'] as String?)?.trim();
+        if (m != null && m.isNotEmpty) set.add(m);
+      } catch (_) {}
+    }
+    return set.toList();
+  }
+
   void _showQuickAdd() {
     String text = '';
     String detectedModule = 'Tarefas';
+    String selectedModule = detectedModule;
+    bool manuallySelected = false;
 
     showModalBottomSheet(
       context: context,
@@ -48,6 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return StatefulBuilder(builder: (context, setModalState) {
+          final currentModules = _availableModules();
+
           return Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -58,40 +99,106 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40,
-                  height: 4,
+                  width: 40, height: 4,
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                       color: Colors.grey[600],
                       borderRadius: BorderRadius.circular(4)),
                 ),
-                Text('Adicionar rapidamente',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text('Adicionar rapidamente', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
                 TextField(
                   autofocus: true,
-                  decoration:
-                      const InputDecoration(hintText: 'Ex: Gastei 50 no almoço'),
+                  decoration: const InputDecoration(hintText: 'Ex: Gastei 50 no almoço'),
                   onChanged: (val) {
                     setModalState(() {
                       text = val;
-                      detectedModule = detectModule(val);
+                      final newDetected = detectModule(val);
+                      detectedModule = newDetected;
+                      if (!manuallySelected) {
+                        selectedModule = newDetected;
+                      }
                     });
                   },
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Chip(
-                      label: Text(detectedModule,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primary.withOpacity(0.12),
+                    // Módulo atual com ponto colorido (sem o chip de sugestão)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade600),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 10, height: 10,
+                            decoration: BoxDecoration(
+                              color: _colorForModule(selectedModule).withOpacity(0.9),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(selectedModule, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          selectedModule = detectedModule;
+                          manuallySelected = false;
+                        });
+                      },
+                      child: const Text('Usar sugestão'),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedModule,
+                        items: currentModules.map((m) => DropdownMenuItem(
+                          value: m,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 10, height: 10,
+                                decoration: BoxDecoration(
+                                  color: _colorForModule(m).withOpacity(0.9),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(m),
+                            ],
+                          ),
+                        )).toList(),
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setModalState(() {
+                            selectedModule = v;
+                            manuallySelected = true;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Trocar módulo',
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const SizedBox(width: 4),
+                    Expanded(
                       child: Text(
-                        text,
+                        text.isEmpty ? 'Nenhuma descrição' : text,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
@@ -114,11 +221,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           final title = text.trim();
                           if (title.isEmpty) return;
-                          final key =
-                              DateTime.now().millisecondsSinceEpoch.toString();
+                          final key = DateTime.now().millisecondsSinceEpoch.toString();
                           final item = {
                             'title': title,
-                            'module': detectedModule,
+                            'module': selectedModule,
                             'timestamp': DateTime.now().toIso8601String(),
                             'isDone': false,
                           };
@@ -151,11 +257,32 @@ class _HomeScreenState extends State<HomeScreen> {
     box.delete(key);
   }
 
+  void _confirmDelete(dynamic key) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Excluir registro'),
+          content: const Text('Deseja excluir este registro permanentemente?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () {
+                _deleteItem(key);
+                Navigator.of(ctx).pop();
+              },
+              child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   List<Map<String, dynamic>> _itemsForToday(Box b) {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, now.day);
     final end = start.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
-
     final List<Map<String, dynamic>> items = [];
 
     for (var key in b.keys) {
@@ -163,41 +290,24 @@ class _HomeScreenState extends State<HomeScreen> {
         final raw = b.get(key);
         if (raw == null) continue;
         final item = Map<String, dynamic>.from(raw as Map);
-
-        // aceita int (msSinceEpoch), String (ISO) ou DateTime
         DateTime? ts;
         final t = item['timestamp'];
         if (t == null) continue;
-        if (t is int) {
-          ts = DateTime.fromMillisecondsSinceEpoch(t);
-        } else if (t is String) {
-          ts = DateTime.tryParse(t);
-        } else if (t is DateTime) {
-          ts = t;
-        }
+        if (t is int) ts = DateTime.fromMillisecondsSinceEpoch(t);
+        else if (t is String) ts = DateTime.tryParse(t);
+        else if (t is DateTime) ts = t;
 
         if (ts == null) continue;
         ts = ts.toLocal();
-
         if (ts.isBefore(start) || ts.isAfter(end)) continue;
 
         final copy = Map<String, dynamic>.from(item);
         copy['_key'] = key;
         copy['_ts'] = ts;
         items.add(copy);
-      } catch (_) {
-        // ignora entradas inválidas
-        continue;
-      }
+      } catch (_) { continue; }
     }
-
-    // ordena por timestamp decrescente (mais recente primeiro)
-    items.sort((a, b) {
-      final ta = a['_ts'] as DateTime;
-      final tb = b['_ts'] as DateTime;
-      return tb.compareTo(ta);
-    });
-
+    items.sort((a, b) => (b['_ts'] as DateTime).compareTo(a['_ts'] as DateTime));
     return items;
   }
 
@@ -213,21 +323,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ]),
         actions: [
           IconButton(
-            tooltip: 'Módulos',
-            icon: const Icon(Icons.view_list),
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const ModulesScreen())),
+            tooltip: 'Módulos', icon: const Icon(Icons.view_list),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ModulesScreen())),
           ),
+          IconButton(tooltip: 'Relatório', icon: const Icon(Icons.bar_chart_outlined), onPressed: () {}),
           IconButton(
-            tooltip: 'Relatório',
-            icon: const Icon(Icons.bar_chart_outlined),
-            onPressed: () {}, // implementar relatório
-          ),
-          IconButton(
-            tooltip: 'Foco',
-            icon: const Icon(Icons.center_focus_strong),
-            onPressed: () {}, // implementar modo foco
-          ),
+                tooltip: 'Foco',
+                icon: const Icon(Icons.center_focus_strong),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => FocusScreen(
+                        taskTitle: 'Estudar Álgebra — Capítulo 3',
+                        demoMode: true,
+                      ),
+                    ),
+                  );
+                },
+              ),
         ],
       ),
       floatingActionButton: AlfredFab(onTap: _showQuickAdd),
@@ -237,16 +350,9 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, Box b, _) {
             final items = _itemsForToday(b);
             if (items.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text(
-                    'Nenhum registro para hoje. Toque em + para adicionar.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              );
+              return Center(child: Padding(padding: const EdgeInsets.all(20),
+                  child: Text('Nenhum registro para hoje. Toque em + para adicionar.', 
+                  style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center)));
             }
 
             return ListView.separated(
@@ -260,8 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final module = item['module'] as String? ?? '';
                 final isDone = item['isDone'] as bool? ?? false;
                 final ts = item['_ts'] as DateTime;
-                final timeLabel =
-                    '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
+                final timeLabel = '${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
 
                 return Dismissible(
                   key: Key(key.toString()),
@@ -280,33 +385,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       leading: GestureDetector(
                         onTap: () => _toggleDone(key),
                         child: Container(
-                          width: 44,
-                          height: 44,
+                          width: 44, height: 44,
                           decoration: BoxDecoration(
                             color: isDone ? Colors.green : Colors.transparent,
-                            border: Border.all(
-                                color: isDone ? Colors.green : Colors.grey.shade400),
+                            border: Border.all(color: isDone ? Colors.green : Colors.grey.shade400),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: isDone
-                              ? const Icon(Icons.check, color: Colors.white, size: 20)
-                              : const Icon(Icons.circle_outlined, size: 20),
+                          child: isDone ? const Icon(Icons.check, color: Colors.white, size: 20) : const Icon(Icons.circle_outlined, size: 20),
                         ),
                       ),
-                      title: Text(
-                        title,
-                        style: TextStyle(
-                            decoration:
-                                isDone ? TextDecoration.lineThrough : TextDecoration.none,
+                      title: Text(title, style: TextStyle(
+                            decoration: isDone ? TextDecoration.lineThrough : TextDecoration.none,
                             color: isDone ? Colors.grey : Theme.of(context).textTheme.bodyLarge!.color,
-                            fontWeight: FontWeight.w600),
+                            fontWeight: FontWeight.w600)),
+                      subtitle: Row(
+                        children: [
+                          Container(width: 8, height: 8, decoration: BoxDecoration(color: _colorForModule(module), shape: BoxShape.circle)),
+                          const SizedBox(width: 8),
+                          Text(module),
+                        ],
                       ),
-                      subtitle: Text(module),
-                      trailing: Text(timeLabel,
-                          style: Theme.of(context).textTheme.bodySmall),
-                      onTap: () {
-                        // future: open detail / edit
-                      },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(timeLabel, style: Theme.of(context).textTheme.bodySmall),
+                          const SizedBox(width: 8),
+                          IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _confirmDelete(key)),
+                        ],
+                      ),
                     ),
                   ),
                 );
