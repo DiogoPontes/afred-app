@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'theme/alfred_theme.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,8 @@ class AlfredApp extends StatelessWidget {
       title: 'Alfred',
       debugShowCheckedModeBanner: false,
       theme: alfredTheme, // seu theme customizado (alfred_theme.dart)
-      home: const HomeScreen(),
+      home: const SplashScreen(),
+      
     );
   }
 }

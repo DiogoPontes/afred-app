@@ -30,3 +30,4 @@ flutter:
 
   assets:
     - assets/backups/dev_backup.json
+    - assets/images/alfred_splash.png
