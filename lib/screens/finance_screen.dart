@@ -22,6 +22,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   PeriodPreset _period = PeriodPreset.today;
   DateTimeRange? _customRange;
   String? _selectedCategory;
+  String? _selectedCardType; // agora guarda NOME do cartão filtrado
   String _search = '';
 
   AdvancedPeriod _advanced = AdvancedPeriod.none;
@@ -171,6 +172,43 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return ['(Todas)', 'Receitas', 'Despesas'] + list;
   }
 
+  // ---------- NOVO: lista de filtros baseada no NOME/DESCRIÇÃO do cartão ----------
+  List<String> _availableCardFilters() {
+    final types = <String>{'(Todos)', 'Sem cartão'};
+    // pegar nomes a partir dos lançamentos
+    for (var raw in box.values) {
+      try {
+        final item = Map<String, dynamic>.from(raw as Map);
+        if ((item['module'] ?? '') != 'Finanças') continue;
+        final cn = (item['cardName'] as String?)?.trim();
+        if (cn != null && cn.isNotEmpty) {
+          types.add(cn);
+        } else {
+          types.add('Sem cartão');
+        }
+      } catch (_) {}
+    }
+    // também incluir cartões cadastrados na box 'cards'
+    for (var k in _cardsBox.keys) {
+      try {
+        final raw = _cardsBox.get(k);
+        if (raw is Map) {
+          final name = (raw['name'] as String?)?.trim();
+          if (name != null && name.isNotEmpty) types.add(name);
+        }
+      } catch (_) {}
+    }
+    final list = types.toList();
+    list.sort((a, b) {
+      if (a == '(Todos)') return -1;
+      if (b == '(Todos)') return 1;
+      if (a == 'Sem cartão') return 1;
+      if (b == 'Sem cartão') return -1;
+      return a.toLowerCase().compareTo(b.toLowerCase());
+    });
+    return list;
+  }
+
   List<Map<String, dynamic>> _filteredFinanceItems() {
     final range = _rangeForPreset(_period);
     final List<Map<String, dynamic>> items = [];
@@ -201,6 +239,16 @@ class _FinanceScreenState extends State<FinanceScreen> {
         if (_selectedCategory == 'Despesas' && isIncome) continue;
 
         if (_selectedCategory != null && _selectedCategory != '(Todas)' && _selectedCategory != 'Receitas' && _selectedCategory != 'Despesas' && category != _selectedCategory) continue;
+
+        // FILTRO POR NOME DO CARTÃO (cardName)
+        final cardName = (item['cardName'] as String?)?.trim();
+        if (_selectedCardType != null && _selectedCardType != '(Todos)') {
+          if (_selectedCardType == 'Sem cartão') {
+            if (cardName != null && cardName.isNotEmpty) continue;
+          } else {
+            if (cardName != _selectedCardType) continue;
+          }
+        }
 
         final title = (item['title'] as String? ?? '').toLowerCase();
         if (_search.isNotEmpty && !title.contains(_search.toLowerCase())) continue;
@@ -265,7 +313,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   String _generateCsv(List<Map<String, dynamic>> items) {
     final sb = StringBuffer();
-    sb.writeln('timestamp,description,category,amount,payment_method,installment_number,installment_total,group_id,is_income');
+    sb.writeln('timestamp,description,category,amount,payment_method,installment_number,installment_total,group_id,is_income,card_id,card_name,card_type');
     for (var it in items) {
       final ts = it['timestamp'] as String? ?? '';
       final title = (it['title'] as String?)?.replaceAll('"', '""') ?? '';
@@ -276,7 +324,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
       final instTotal = (it['installmentTotal'] ?? '').toString();
       final groupId = (it['installmentGroupId'] ?? '').toString();
       final isIncome = (it['isIncome'] == true) ? '1' : '0';
-      sb.writeln('"$ts","$title","$cat",$amt,"$pm",$instNumber,$instTotal,"$groupId",$isIncome');
+      final cardId = (it['cardId'] ?? '').toString();
+      final cardName = (it['cardName'] ?? '').toString().replaceAll('"', '""');
+      final cardType = (it['cardType'] ?? '').toString();
+      sb.writeln('"$ts","$title","$cat",$amt,"$pm",$instNumber,$instTotal,"$groupId",$isIncome,"$cardId","$cardName","$cardType"');
     }
     return sb.toString();
   }
@@ -702,6 +753,227 @@ class _FinanceScreenState extends State<FinanceScreen> {
     }
   }
 
+  // Helpers — obtenha a box 'cards' e lista de cartões
+  Box get _cardsBox => Hive.box('cards');
+
+  List<Map<String, dynamic>> _availableCards() {
+    final out = <Map<String, dynamic>>[];
+    for (var key in _cardsBox.keys) {
+      final raw = _cardsBox.get(key);
+      if (raw is Map) {
+        final m = Map<String, dynamic>.from(raw);
+        m['_key'] = key; // chave Hive (útil para editar/excluir)
+        out.add(m);
+      }
+    }
+    // ordenar por name
+    out.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+    return out;
+  }
+
+  // ---------- Cards UI: gerenciar e adicionar/editar (métodos dentro do estado) ----------
+  Future<void> _showManageCards() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (ctx, setSt) {
+          final cards = _availableCards();
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: const Text('Cartões'),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () async {
+                        await _showAddOrEditCard(null);
+                        setSt(() {});
+                      },
+                    ),
+                  ),
+                  const Divider(),
+                  if (cards.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('Nenhum cartão cadastrado. Toque + para criar.'),
+                    )
+                  else
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: cards.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (_, idx) {
+                          final c = cards[idx];
+                          final type = (c['type'] ?? '') as String;
+                          final closingDay = c['closingDay'];
+                          final subtitle = type == 'Crédito' && closingDay != null ? '$type • Dia de virada: $closingDay' : type;
+                          return ListTile(
+                            title: Text('${c['name']}'),
+                            subtitle: Text(subtitle),
+                            leading: Icon(type == 'Crédito' ? Icons.credit_card : Icons.payment),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () async {
+                                    await _showAddOrEditCard(c['_key']);
+                                    setSt(() {});
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: ctx,
+                                      builder: (dctx) => AlertDialog(
+                                        title: const Text('Confirmar exclusão'),
+                                        content: Text('Excluir "${c['name']}"? Isso não removerá lançamentos já vinculados.'),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(dctx), child: const Text('Cancelar')),
+                                          TextButton(
+                                            onPressed: () {
+                                              _cardsBox.delete(c['_key']);
+                                              Navigator.pop(dctx);
+                                              setSt(() {});
+                                            },
+                                            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  // Retorna id do cartão criado/editado (ou null)
+  Future<String?> _showAddOrEditCard(dynamic hiveKey) async {
+    final cardsBox = _cardsBox;
+
+    final nameCtrl = TextEditingController();
+    String type = 'Crédito';
+    int closingDay = 1; // default for crédito
+
+    if (hiveKey != null) {
+      final existing = Map<String, dynamic>.from(cardsBox.get(hiveKey) as Map);
+      nameCtrl.text = (existing['name'] ?? '') as String;
+      type = (existing['type'] ?? 'Crédito') as String;
+      // existing closingDay may be null for Débito
+      closingDay = (existing['closingDay'] is int) ? (existing['closingDay'] as int) : 1;
+    }
+
+    // retornará o id criado/atualizado (ou null se cancelar)
+    return await showModalBottomSheet<String?>(
+      context: context,
+      isScrollControlled: true,
+      builder: (bctx) {
+        return StatefulBuilder(builder: (ctx, setModal) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(bctx).viewInsets.bottom),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      hiveKey == null ? 'Novo cartão' : 'Editar cartão',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: nameCtrl,
+                      decoration: const InputDecoration(labelText: 'Nome do cartão'),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: type,
+                      items: const [
+                        DropdownMenuItem(value: 'Crédito', child: Text('Crédito')),
+                        DropdownMenuItem(value: 'Débito', child: Text('Débito')),
+                      ],
+                      onChanged: (v) {
+                        setModal(() {
+                          type = v ?? 'Crédito';
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Tipo'),
+                    ),
+                    const SizedBox(height: 12),
+                    if (type == 'Crédito') ...[
+                      DropdownButtonFormField<int>(
+                        value: closingDay,
+                        items: List.generate(31, (i) => i + 1).map((d) {
+                          return DropdownMenuItem(value: d, child: Text(d.toString()));
+                        }).toList(),
+                        onChanged: (v) {
+                          setModal(() {
+                            closingDay = v ?? 1;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Dia de virada do ciclo'),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (type == 'Débito') const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        child: Text(hiveKey == null ? 'Criar' : 'Salvar'),
+                        onPressed: () {
+                          final nm = nameCtrl.text.trim();
+                          if (nm.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Informe o nome do cartão')),
+                            );
+                            return;
+                          }
+
+                          final id = hiveKey ?? DateTime.now().millisecondsSinceEpoch.toString();
+                          final card = {
+                            'id': id,
+                            'name': nm,
+                            'type': type,
+                            // se for débito não salvamos dia de virada
+                            'closingDay': type == 'Crédito' ? closingDay : null,
+                          };
+
+                          cardsBox.put(id, card);
+                          // fecha o modal retornando o id
+                          Navigator.of(bctx).pop(id);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
   void _showParcelOptions(BuildContext context, dynamic key, Map<String, dynamic> existing) {
     final groupId = existing['installmentGroupId'] as String?;
     showModalBottomSheet(
@@ -759,7 +1031,22 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return title.replaceAll(RegExp(r'\s*\(\d+/\d+\)\s*$'), '').trim();
   }
 
-  // ---------- Edit series ----------
+  Future<String?> _promptNewCategory(BuildContext ctx) async {
+    String input = '';
+    return showDialog<String>(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        title: const Text('Nova categoria'),
+        content: TextField(autofocus: true, decoration: const InputDecoration(hintText: 'Ex: Restaurante'), onChanged: (v) => input = v),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, input.trim()), child: const Text('Adicionar')),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Edit series (modificada) ----------
   void _showEditSeries(BuildContext context, String groupId) {
     final groupItems = _getGroupItems(groupId);
     if (groupItems.isEmpty) return;
@@ -781,6 +1068,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
     String selectedCategory = currentCategory == '(Sem categoria)' ? '(Sem categoria)' : currentCategory;
     String selectedPaymentMethod = currentPaymentMethod;
 
+    // card selection initial state (by key)
+    String? selectedCardKey = first['cardId'] as String?;
+    String? selectedCardName = first['cardName'] as String?;
+    String? selectedCardType = first['cardType'] as String?;
+
     final LinkedHashSet<String> catSet = LinkedHashSet<String>();
     catSet.add('(Sem categoria)');
     for (var c in categoriesBox.values) {
@@ -793,6 +1085,31 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
     if (!catOptions.contains(selectedCategory)) {
       selectedCategory = '(Sem categoria)';
+    }
+
+    final cards = _availableCards();
+    List<Map<String, dynamic>> filteredCards = [];
+    void _rebuildFilteredCards(StateSetter setModal) {
+      if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
+        filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
+        // if currently selected card key is not in filtered, clear selection
+        if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
+          selectedCardKey = null;
+          selectedCardName = null;
+          selectedCardType = null;
+        }
+      } else {
+        filteredCards = [];
+        selectedCardKey = null;
+        selectedCardName = null;
+        selectedCardType = null;
+      }
+      setModal(() {}); // atualiza modal
+    }
+
+    // inicializa filteredCards
+    if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
+      filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
     }
 
     showModalBottomSheet(
@@ -858,6 +1175,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     decoration: const InputDecoration(labelText: 'Categoria'),
                   ),
                   const SizedBox(height: 8),
+
+                  // --- Método de pagamento (AGORA aqui) ---
                   DropdownButtonFormField<String>(
                     value: selectedPaymentMethod,
                     items: paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
@@ -866,26 +1185,74 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       if (selectedPaymentMethod != 'Crédito') {
                         installmentCtrl.text = '1';
                       }
+                      // rebuild filteredCards conforme novo método
+                      _rebuildFilteredCards(setModal);
                     }),
                     decoration: const InputDecoration(labelText: 'Método de pagamento'),
                   ),
                   const SizedBox(height: 8),
+
+                  // --- Card dropdown (AGORA: sempre renderiza, mesmo se filteredCards vazio) ---
+                  DropdownButtonFormField<String?>(
+                    value: selectedCardKey,
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('Nenhum cartão')),
+                      const DropdownMenuItem(value: '__add_new__', child: Text('Adicionar novo cartão...')),
+                      ...filteredCards.map((c) => DropdownMenuItem(value: c['_key'] as String, child: Text('${c['name']} (${c['type']})'))),
+                    ],
+                    onChanged: (v) async {
+                      if (v == '__add_new__') {
+                        final newId = await _showAddOrEditCard(null);
+                        final updated = _availableCards();
+                        filteredCards = updated.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
+                        if (newId != null) {
+                          final c = _cardsBox.get(newId) as Map?;
+                          setModal(() {
+                            selectedCardKey = newId;
+                            selectedCardName = c != null ? (c['name'] as String?) : null;
+                            selectedCardType = c != null ? (c['type'] as String?) : null;
+                          });
+                        } else {
+                          setModal(() {}); // força redraw se usuário cancelou
+                        }
+                      } else {
+                        setModal(() {
+                          selectedCardKey = v;
+                          if (v != null) {
+                            final c = _cardsBox.get(v) as Map;
+                            selectedCardName = c['name'] as String?;
+                            selectedCardType = c['type'] as String?;
+                            // manter coerência: se cardType difere do método (improvável), sincroniza
+                            if (selectedCardType != selectedPaymentMethod && (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito')) {
+                              selectedPaymentMethod = selectedCardType ?? selectedPaymentMethod;
+                            }
+                          } else {
+                            selectedCardName = null;
+                            selectedCardType = null;
+                          }
+                        });
+                      }
+                    },
+                    decoration: const InputDecoration(labelText: 'Cartão (opcional)'),
+                  ),
+                  const SizedBox(height: 8),
+
+                  TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total')),
+                  const SizedBox(height: 8),
+                  if (!isIncome && (selectedPaymentMethod == 'Crédito')) ...[
+                    TextField(
+                      controller: installmentCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Número de parcelas'),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ] else ...[
                   DropdownButtonFormField<String>(
                     value: selectedPaymentMethod,
                     items: incomeMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
                     onChanged: (v) => setModal(() => selectedPaymentMethod = v ?? incomeMethods.first),
                     decoration: const InputDecoration(labelText: 'Método de pagamento'),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                TextField(controller: amountCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total')),
-                const SizedBox(height: 8),
-                if (!isIncome && (selectedPaymentMethod == 'Crédito')) ...[
-                  TextField(
-                    controller: installmentCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Número de parcelas'),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -940,6 +1307,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             'originalAmount': totalAmount,
                             'paymentMethod': selectedPaymentMethod,
                             'isIncome': isIncome,
+                            'cardId': first['cardId'] ?? null,
+                            'cardName': first['cardName'] ?? null,
+                            'cardType': first['cardType'] ?? null,
                           };
                           final newKey = '$groupId-${i + 1}-${dueDate.year}${dueDate.month}${dueDate.day}';
                           box.put(newKey, item);
@@ -961,22 +1331,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  Future<String?> _promptNewCategory(BuildContext ctx) async {
-    String input = '';
-    return showDialog<String>(
-      context: ctx,
-      builder: (_) => AlertDialog(
-        title: const Text('Nova categoria'),
-        content: TextField(autofocus: true, decoration: const InputDecoration(hintText: 'Ex: Restaurante'), onChanged: (v) => input = v),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, input.trim()), child: const Text('Adicionar')),
-        ],
-      ),
-    );
-  }
-
-  // ---------- Add / Edit single expense ----------
+  // ---------- Add / Edit single expense (modificada) ----------
   void _showAddOrEditExpense(BuildContext context, {dynamic key, Map<String, dynamic>? existing}) {
     final bool isEditing = key != null;
     final bool existingIsIncome = existing != null && (existing['isIncome'] == true);
@@ -988,6 +1343,16 @@ class _FinanceScreenState extends State<FinanceScreen> {
     String selectedCategory = existing != null ? _normalizeCategory(existing['category']) : '(Sem categoria)';
     String selectedPaymentMethod = existing != null ? (existing['paymentMethod'] as String? ?? paymentMethods.first) : paymentMethods.first;
     bool isIncomeSelected = existingIsIncome;
+
+    // Card selection initial state
+    String? selectedCardKey = existing != null && existing['cardId'] != null ? existing['cardId'] as String? : null;
+    String? selectedCardName = existing != null && existing['cardName'] != null ? existing['cardName'] as String? : null;
+    String? selectedCardType = existing != null && existing['cardType'] != null ? existing['cardType'] as String? : null;
+    if (selectedCardType != null) {
+      // ensure payment method sync if card exists
+      if (selectedCardType == 'Crédito') selectedPaymentMethod = 'Crédito';
+      else if (selectedCardType == 'Débito') selectedPaymentMethod = 'Débito';
+    }
 
     final LinkedHashSet<String> catSet = LinkedHashSet<String>();
     catSet.add('(Sem categoria)');
@@ -1001,6 +1366,29 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
     if (!catOptions.contains(selectedCategory)) {
       selectedCategory = '(Sem categoria)';
+    }
+
+    final cards = _availableCards();
+    List<Map<String, dynamic>> filteredCards = [];
+    void _rebuildFilteredCards(StateSetter setModal) {
+      if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
+        filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
+        if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
+          selectedCardKey = null;
+          selectedCardName = null;
+          selectedCardType = null;
+        }
+      } else {
+        filteredCards = [];
+        selectedCardKey = null;
+        selectedCardName = null;
+        selectedCardType = null;
+      }
+    }
+
+    // initialize filteredCards based on initial payment method
+    if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
+      filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
     }
 
     showModalBottomSheet(
@@ -1026,6 +1414,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     isIncomeSelected = (v == 'Receita');
                     selectedPaymentMethod = isIncomeSelected ? incomeMethods.first : paymentMethods.first;
                     if (!isIncomeSelected && selectedCategory == '(Sem categoria)') selectedCategory = '(Sem categoria)';
+                    // if switching to receita, clear card selection
+                    if (isIncomeSelected) {
+                      selectedCardKey = null;
+                      selectedCardName = null;
+                      selectedCardType = null;
+                      filteredCards = [];
+                    }
                   }),
                   decoration: const InputDecoration(labelText: 'Tipo'),
                 ),
@@ -1083,36 +1478,109 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     decoration: const InputDecoration(labelText: 'Categoria'),
                   ),
                   const SizedBox(height: 10),
+
+                  // --- Método de pagamento (AGORA depois da categoria) ---
+                  DropdownButtonFormField<String>(
+                    value: selectedPaymentMethod,
+                    items: (isIncomeSelected ? incomeMethods : paymentMethods).map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+                    onChanged: (v) => setModal(() {
+                      selectedPaymentMethod = v ?? (isIncomeSelected ? incomeMethods.first : paymentMethods.first);
+                      if (!isIncomeSelected && selectedPaymentMethod != 'Crédito') {
+                        installmentCtrl.text = '1';
+                      }
+                      // rebuild filteredCards conforme seleção do método
+                      if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
+                        filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
+                        // se o selectedCardKey não existe mais no filtro, limpe
+                        if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
+                          selectedCardKey = null;
+                          selectedCardName = null;
+                          selectedCardType = null;
+                        }
+                      } else {
+                        filteredCards = [];
+                        selectedCardKey = null;
+                        selectedCardName = null;
+                        selectedCardType = null;
+                      }
+                    }),
+                    decoration: const InputDecoration(labelText: 'Método de pagamento'),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // --- Card dropdown (AGORA: sempre renderiza, inclui opção de adicionar) ---
+                  DropdownButtonFormField<String?>(
+                    value: selectedCardKey,
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('Nenhum cartão')),
+                      const DropdownMenuItem(value: '__add_new__', child: Text('Adicionar novo cartão...')),
+                      ...filteredCards.map((c) => DropdownMenuItem(value: c['_key'] as String, child: Text('${c['name']} (${c['type']})'))),
+                    ],
+                    onChanged: (v) async {
+                      if (v == '__add_new__') {
+                        final newId = await _showAddOrEditCard(null);
+                        final updated = _availableCards();
+                        filteredCards = updated.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
+                        if (newId != null) {
+                          final c = _cardsBox.get(newId) as Map?;
+                          setModal(() {
+                            selectedCardKey = newId;
+                            selectedCardName = c != null ? (c['name'] as String?) : null;
+                            selectedCardType = c != null ? (c['type'] as String?) : null;
+                          });
+                        } else {
+                          setModal(() {});
+                        }
+                      } else {
+                        setModal(() {
+                          selectedCardKey = v;
+                          if (v != null) {
+                            final c = _cardsBox.get(v) as Map;
+                            selectedCardName = c['name'] as String?;
+                            selectedCardType = c['type'] as String?;
+                            // garantir coerência entre método e tipo do cartão
+                            if (selectedCardType != selectedPaymentMethod && (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito')) {
+                              selectedPaymentMethod = selectedCardType ?? selectedPaymentMethod;
+                            }
+                          } else {
+                            selectedCardName = null;
+                            selectedCardType = null;
+                          }
+                        });
+                      }
+                    },
+                    decoration: const InputDecoration(labelText: 'Cartão (opcional)'),
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
+                  const SizedBox(height: 10),
+
+                  if (!isIncomeSelected && (selectedPaymentMethod == 'Crédito')) ...[
+                    TextField(
+                      controller: installmentCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Número de parcelas',
+                        hintText: '1 = sem parcelamento (apenas crédito)',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
                 ] else ...[
+                  // receita branch
                   TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Descrição (opcional)')),
                   const SizedBox(height: 10),
-                ],
-
-                DropdownButtonFormField<String>(
-                  value: selectedPaymentMethod,
-                  items: (isIncomeSelected ? incomeMethods : paymentMethods).map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                  onChanged: (v) => setModal(() {
-                    selectedPaymentMethod = v ?? (isIncomeSelected ? incomeMethods.first : paymentMethods.first);
-                    if (!isIncomeSelected && selectedPaymentMethod != 'Crédito') {
-                      installmentCtrl.text = '1';
-                    }
-                  }),
-                  decoration: const InputDecoration(labelText: 'Método de pagamento'),
-                ),
-
-                const SizedBox(height: 10),
-                TextField(controller: amountCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
-                const SizedBox(height: 10),
-
-                if (!isIncomeSelected && (selectedPaymentMethod == 'Crédito')) ...[
-                  TextField(
-                    controller: installmentCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Número de parcelas',
-                      hintText: '1 = sem parcelamento (apenas crédito)',
-                    ),
+                  // método de recebimento (para receitas) — mantemos, mas sem cartões
+                  DropdownButtonFormField<String>(
+                    value: selectedPaymentMethod,
+                    items: incomeMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+                    onChanged: (v) => setModal(() => selectedPaymentMethod = v ?? incomeMethods.first),
+                    decoration: const InputDecoration(labelText: 'Método de recebimento'),
                   ),
+                  const SizedBox(height: 10),
+                  TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
                   const SizedBox(height: 10),
                 ],
 
@@ -1160,6 +1628,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             'originalAmount': existing?['originalAmount'] ?? totalAmount,
                             'paymentMethod': selectedPaymentMethod,
                             'isIncome': isIncomeSelected,
+                            'cardId': selectedCardKey,
+                            'cardName': selectedCardName,
+                            'cardType': selectedCardType,
                           };
                           box.put(key, item);
                         } else {
@@ -1173,6 +1644,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               'category': categoryValue,
                               'paymentMethod': selectedPaymentMethod,
                               'isIncome': isIncomeSelected,
+                              'cardId': selectedCardKey,
+                              'cardName': selectedCardName,
+                              'cardType': selectedCardType,
                             };
                             box.add(item);
                           } else {
@@ -1193,6 +1667,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                 'originalAmount': totalAmount,
                                 'paymentMethod': selectedPaymentMethod,
                                 'isIncome': isIncomeSelected,
+                                'cardId': selectedCardKey,
+                                'cardName': selectedCardName,
+                                'cardType': selectedCardType,
                               };
                               box.add(item);
                             }
@@ -1363,6 +1840,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
+  // Escolhe ícone para chip de filtro de cartão
+  IconData _cardFilterIcon(String name) {
+    if (name == '(Todos)') return Icons.view_list;
+    if (name == 'Sem cartão') return Icons.block;
+    return Icons.credit_card;
+  }
+
   @override
   Widget build(BuildContext context) {
     final availableCats = _availableCategories();
@@ -1381,6 +1865,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
       'Ano',
       'Personalizado',
     ];
+
+    final availableCardFilters = _availableCardFilters();
 
     return Scaffold(
       appBar: AppBar(
@@ -1415,22 +1901,22 @@ class _FinanceScreenState extends State<FinanceScreen> {
               );
             },
           ),
-          IconButton(  
-            tooltip: 'Gráficos',  
-            icon: const Icon(Icons.pie_chart_outline),  
-            onPressed: () {  
-              showModalBottomSheet(  
-                context: context,  
-                isScrollControlled: true,  
-                shape: const RoundedRectangleBorder(  
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),  
-                ),  
-                builder: (_) => FractionallySizedBox(  
-                  heightFactor: 0.92,  
-                  child: FinanceChartsModal(box: box),  
-                ),  
-              );  
-            },  
+          IconButton(
+            tooltip: 'Gráficos',
+            icon: const Icon(Icons.pie_chart_outline),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (_) => FractionallySizedBox(
+                  heightFactor: 0.92,
+                  child: FinanceChartsModal(box: box),
+                ),
+              );
+            },
           ),
           PopupMenuButton<String>(
             onSelected: (v) {
@@ -1441,6 +1927,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
               PopupMenuItem(value: 'manage', child: Text('Gerenciar categorias')),
               PopupMenuItem(value: 'dedupe', child: Text('Limpar duplicatas de categorias')),
             ],
+          ),
+          // manage cards quick access
+          IconButton(
+            tooltip: 'Cartões',
+            icon: const Icon(Icons.credit_card),
+            onPressed: () => _showManageCards(),
           ),
         ],
       ),
@@ -1513,6 +2005,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   _customRange = null;
                   _advanced = AdvancedPeriod.none;
                   _selectedCategory = null;
+                  _selectedCardType = null; // limpa filtro de cartão
                   _search = '';
                   _selectedPeriodOption = _labelForPeriod();
                   _dropdownValue = 'Hoje';
@@ -1548,6 +2041,36 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             _selectedCategory = isAll ? null : c;
                           });
                         },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // --- Filtro por cartão (nome/descrição) com destaque de ícone ---
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  scrollDirection: Axis.horizontal,
+                  children: availableCardFilters.map((c) {
+                    final isAll = c == '(Todos)';
+                    final selected = (_selectedCardType ?? '(Todos)') == c;
+                    final iconData = _cardFilterIcon(c);
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        avatar: Icon(iconData, size: 18, color: selected ? Colors.white : Colors.grey[700]),
+                        label: Text(c),
+                        selected: selected,
+                        selectedColor: Theme.of(context).colorScheme.primary,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedCardType = isAll ? null : c;
+                          });
+                        },
+                        labelStyle: TextStyle(color: selected ? Colors.white : null),
                       ),
                     );
                   }).toList(),
@@ -1641,6 +2164,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   final installmentInfo = (instNum != null && instTotal != null) ? 'Parcela ${instNum}/${instTotal}' : '';
                   final pm = (item['paymentMethod'] as String?) ?? '';
                   final isIncomeItem = item['isIncome'] == true;
+                  final cardName = (item['cardName'] as String?) ?? '';
 
                   return Dismissible(
                     key: Key('$key-$i'),
@@ -1662,7 +2186,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             children: [
                               _paymentMethodIcon(pm),
                               const SizedBox(width: 6),
-                              Flexible(child: Text(pm, style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                              Flexible(child: Text(pm + (cardName.isNotEmpty ? ' • $cardName' : ''), style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis)),
                               const SizedBox(width: 12),
                               Text(timeLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                             ],

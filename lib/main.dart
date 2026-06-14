@@ -14,6 +14,10 @@ Future<void> main() async {
   await Hive.openBox('alfred_sessions');
   await Hive.openBox('alfred_modules');
   await Hive.openBox('alfred_finance_categories');
+  await Hive.openBox('cards');
+  await Hive.openBox('activities'); 
+  await Hive.openBox('activity_logs');
+  await Hive.openBox('alfred_detect_rules');
 
   // inicializa locales para DateFormat (pt_BR)
   await initializeDateFormatting('pt_BR');
