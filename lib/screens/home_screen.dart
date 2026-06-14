@@ -7,6 +7,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import '../widgets/alfred_fab.dart';
 import 'modules_screen.dart';
+import '../services/backup_service.dart';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -759,6 +761,30 @@ class _HomeScreenState extends State<HomeScreen> {
             ]),
         actions: [
           IconButton(
+            tooltip: 'Copiar backup',
+            icon: const Icon(Icons.copy_all),
+            onPressed: () async {
+              final json = BackupService.exportBackupJson();
+              await Clipboard.setData(ClipboardData(text: json));
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Backup copiado para a área de transferência')),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Restaurar backup',
+            icon: const Icon(Icons.restore),
+            onPressed: () async {
+              await BackupService.restoreFromAsset('assets/backups/dev_backup.json');
+              if (!mounted) return;
+              setState(() {});
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Backup restaurado com sucesso')),
+              );
+            },
+          ),
+          IconButton(
             tooltip: 'Módulos',
             icon: const Icon(Icons.view_list),
             onPressed: () => Navigator.of(context).push(
@@ -869,6 +895,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                 shape: BoxShape.circle)),
                         const SizedBox(width: 8),
                         Text(module),
+                        // ── exibe valor e tipo se for Finanças ──
+                        if (module == 'Finanças') ...[
+                          const SizedBox(width: 8),
+                          const Text('•'),
+                          const SizedBox(width: 8),
+                          Builder(builder: (_) {
+                            final isIncome = item['isIncome'] as bool? ?? false;
+                            final amount = item['amount'] as double? ?? 0.0;
+                            final formatted = NumberFormat.currency(
+                                locale: 'pt_BR', symbol: 'R\$').format(amount);
+                            return Text(
+                              '${isIncome ? '▲ ' : '▼ '}$formatted',
+                              style: TextStyle(
+                                color: isIncome ? Colors.green : Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            );
+                          }),
+                        ],
                       ]),
                       trailing: Row(
                           mainAxisSize: MainAxisSize.min,

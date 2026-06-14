@@ -190,7 +190,7 @@ class _FinanceChartsModalState extends State<FinanceChartsModal> with SingleTick
                       final idx = value.toInt().clamp(0, entries.length - 1);
                       final dt = entries[idx].key;
                       return SideTitleWidget(
-                        meta: meta,
+                        axisSide: meta.axisSide,
                         child: Text('${dt.day}/${dt.month}'),
                       );
                     },
@@ -251,7 +251,7 @@ class _FinanceChartsModalState extends State<FinanceChartsModal> with SingleTick
                       final y = label[0];
                       final m = int.tryParse(label[1]) ?? 1;
                       return SideTitleWidget(
-                        meta: meta,
+                        axisSide: meta.axisSide,
                         child: Text(
                           '$m/$y',
                           style: const TextStyle(fontSize: 10),

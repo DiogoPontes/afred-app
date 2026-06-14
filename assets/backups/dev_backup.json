@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-14T20:25:12.322",
+  "boxes": {
+    "alfred_box": [
+      {
+        "key": 0,
+        "value": {
+          "title": "Abacus AI",
+          "module": "Finanças",
+          "timestamp": "2026-06-14T19:34:21.263",
+          "isDone": false,
+          "amount": 49.9,
+          "category": "Assinaturas",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 1,
+        "value": {
+          "title": "teste",
+          "module": "Finanças",
+          "timestamp": "2026-06-14T19:45:26.814",
+          "isDone": false,
+          "amount": 56,
+          "category": "Lazer",
+          "paymentMethod": "Débito",
+          "isIncome": false,
+          "cardId": "1781477146188",
+          "cardName": "Nubank Débito",
+          "cardType": "Débito"
+        }
+      },
+      {
+        "key": "activity_1781476671964",
+        "value": {
+          "title": "Musculação — 60 min • Moderado",
+          "module": "Atividade Física",
+          "timestamp": "2026-06-13T19:37:00.000",
+          "isDone": false,
+          "activityLogKey": "1781476671964",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": ""
+        }
+      },
+      {
+        "key": "activity_1781478780361",
+        "value": {
+          "title": "Corrida — 5.00 km • Moderado",
+          "module": "Atividade Física",
+          "timestamp": "2026-06-14T20:12:39.376",
+          "isDone": false,
+          "activityLogKey": "1781478780361",
+          "activityName": "Corrida",
+          "unit": "km",
+          "durationMinutes": null,
+          "distanceKm": 5,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": ""
+        }
+      }
+    ],
+    "alfred_sessions": [],
+    "alfred_modules": [
+      {
+        "key": 0,
+        "value": "Tarefas"
+      },
+      {
+        "key": 1,
+        "value": "Estudos"
+      },
+      {
+        "key": 2,
+        "value": "Atividade Física"
+      },
+      {
+        "key": 3,
+        "value": "Finanças"
+      },
+      {
+        "key": 4,
+        "value": "Alimentação"
+      },
+      {
+        "key": 5,
+        "value": "Compromissos"
+      }
+    ],
+    "alfred_finance_categories": [
+      {
+        "key": 0,
+        "value": "Alimentação"
+      },
+      {
+        "key": 1,
+        "value": "Transporte"
+      },
+      {
+        "key": 2,
+        "value": "Casa"
+      },
+      {
+        "key": 3,
+        "value": "Lazer"
+      },
+      {
+        "key": 4,
+        "value": "Saúde"
+      },
+      {
+        "key": 5,
+        "value": "Outros"
+      },
+      {
+        "key": 6,
+        "value": "Assinaturas"
+      }
+    ],
+    "cards": [
+      {
+        "key": "1781476529523",
+        "value": {
+          "id": "1781476529523",
+          "name": "Nubank Credito",
+          "type": "Crédito",
+          "closingDay": 4
+        }
+      },
+      {
+        "key": "1781477146188",
+        "value": {
+          "id": "1781477146188",
+          "name": "Nubank Débito",
+          "type": "Débito",
+          "closingDay": null
+        }
+      }
+    ],
+    "activities": [
+      {
+        "key": "1781476574077-musculacao",
+        "value": {
+          "id": "musculacao",
+          "name": "Musculação",
+          "unit": "min"
+        }
+      },
+      {
+        "key": "1781476574078-natacao",
+        "value": {
+          "id": "natacao",
+          "name": "Natação",
+          "unit": "min"
+        }
+      },
+      {
+        "key": "1781476574079-corrida",
+        "value": {
+          "id": "corrida",
+          "name": "Corrida",
+          "unit": "km"
+        }
+      },
+      {
+        "key": "1781476574080-ciclismo",
+        "value": {
+          "id": "ciclismo",
+          "name": "Ciclismo",
+          "unit": "km"
+        }
+      },
+      {
+        "key": "1781476574081-yoga",
+        "value": {
+          "id": "yoga",
+          "name": "Yoga",
+          "unit": "min"
+        }
+      }
+    ],
+    "activity_logs": [
+      {
+        "key": "1781476671964",
+        "value": {
+          "activityKey": "1781476574077-musculacao",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-06-13T19:37:00.000",
+          "createdAt": "2026-06-14T19:37:51.964"
+        }
+      },
+      {
+        "key": "1781478780361",
+        "value": {
+          "activityKey": "1781476574079-corrida",
+          "activityName": "Corrida",
+          "unit": "km",
+          "durationMinutes": null,
+          "distanceKm": 5,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-06-14T20:12:39.376",
+          "createdAt": "2026-06-14T20:13:00.361"
+        }
+      }
+    ],
+    "alfred_detect_rules": [
+      {
+        "key": "Alimentação",
+        "value": [
+          "comi",
+          "almoç",
+          "jantar",
+          "lanche",
+          "pizza",
+          "refei"
+        ]
+      },
+      {
+        "key": "Atividade Física",
+        "value": [
+          "corri",
+          "treino",
+          "academia",
+          "km",
+          "corrida",
+          "malhei",
+          "muscula",
+          "natação",
+          "ciclismo",
+          "yoga"
+        ]
+      },
+      {
+        "key": "Compromissos",
+        "value": [
+          "reuni",
+          "médic",
+          "dentista",
+          "encontro",
+          "agenda"
+        ]
+      },
+      {
+        "key": "Estudos",
+        "value": [
+          "estud",
+          "prova",
+          "revisar",
+          "aula",
+          "curso"
+        ]
+      },
+      {
+        "key": "Finanças",
+        "value": [
+          "gastei",
+          "r$",
+          "reais",
+          "paguei",
+          "pagar",
+          "comprei"
+        ]
+      }
+    ]
+  }
+}
