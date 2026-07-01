@@ -1,3 +1,5 @@
+// finance_screen.dart
+
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -1065,6 +1067,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final amountCtrl = TextEditingController(text: currentTotal.toStringAsFixed(2));
     final installmentCtrl = TextEditingController(text: currentInstallments.toString());
     DateTime selectedDate = firstTs;
+    TimeOfDay selectedTime = TimeOfDay(hour: firstTs.hour, minute: firstTs.minute);
     String selectedCategory = currentCategory == '(Sem categoria)' ? '(Sem categoria)' : currentCategory;
     String selectedPaymentMethod = currentPaymentMethod;
 
@@ -1339,7 +1342,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final titleCtrl = TextEditingController(text: existing != null ? (existing['title'] as String? ?? '') : '');
     final amountCtrl = TextEditingController(text: existing != null ? ((existing['amount'] is num) ? existing['amount'].toString() : '') : '');
     final installmentCtrl = TextEditingController(text: existing != null && existing['installmentTotal'] != null ? existing['installmentTotal'].toString() : '1');
-    DateTime selectedDate = existing != null ? (DateTime.tryParse(existing['timestamp'] as String? ?? '') ?? DateTime.now()) : DateTime.now();
+    final DateTime _baseTs = existing != null ? (DateTime.tryParse(existing['timestamp'] as String? ?? '') ?? DateTime.now()) : DateTime.now();
+    DateTime selectedDate = _baseTs;
+    TimeOfDay selectedTime = TimeOfDay(hour: _baseTs.hour, minute: _baseTs.minute);
     String selectedCategory = existing != null ? _normalizeCategory(existing['category']) : '(Sem categoria)';
     String selectedPaymentMethod = existing != null ? (existing['paymentMethod'] as String? ?? paymentMethods.first) : paymentMethods.first;
     bool isIncomeSelected = existingIsIncome;
@@ -1591,12 +1596,35 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         final picked = await showDatePicker(context: ctx, initialDate: selectedDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
                         if (picked != null) {
                           setModal(() {
-                            selectedDate = DateTime(picked.year, picked.month, picked.day, selectedDate.hour, selectedDate.minute);
+                            selectedDate = DateTime(picked.year, picked.month, picked.day, selectedTime.hour, selectedTime.minute);
                           });
                         }
                       },
                       icon: const Icon(Icons.calendar_month),
-                      label: Text(_formatDate(selectedDate)),
+                      label: Text('${selectedDate.day.toString().padLeft(2,'0')}/${selectedDate.month.toString().padLeft(2,'0')}/${selectedDate.year}'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final picked = await showTimePicker(
+                          context: ctx,
+                          initialTime: selectedTime,
+                          builder: (context, child) => MediaQuery(
+                            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                            child: child!,
+                          ),
+                        );
+                        if (picked != null) {
+                          setModal(() {
+                            selectedTime = picked;
+                            selectedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, picked.hour, picked.minute);
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.access_time),
+                      label: Text('${selectedTime.hour.toString().padLeft(2,'0')}:${selectedTime.minute.toString().padLeft(2,'0')}'),
                     ),
                   ),
                 ]),
@@ -1612,7 +1640,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         final installmentCount = int.tryParse(installmentCtrl.text.trim()) ?? 1;
                         final count = installmentCount < 1 ? 1 : installmentCount;
                         final categoryValue = isIncomeSelected ? 'Receita' : (selectedCategory == '(Sem categoria)' ? '' : selectedCategory);
-                        final timestampBase = selectedDate;
+                        final timestampBase = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, selectedTime.hour, selectedTime.minute);
 
                         if (isEditing) {
                           final item = {

@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'theme/alfred_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,8 @@ Future<void> main() async {
   await Hive.openBox('activities'); 
   await Hive.openBox('activity_logs');
   await Hive.openBox('alfred_detect_rules');
+  await Hive.openBox('workout_plans');
+  await Hive.openBox('meal_types');
 
   // inicializa locales para DateFormat (pt_BR)
   await initializeDateFormatting('pt_BR');
@@ -34,6 +37,15 @@ class AlfredApp extends StatelessWidget {
     return MaterialApp(
       title: 'Alfred',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('pt', 'BR'),
+      ],
+      locale: const Locale('pt', 'BR'),
       theme: alfredTheme, // seu theme customizado (alfred_theme.dart)
       home: const SplashScreen(),
       

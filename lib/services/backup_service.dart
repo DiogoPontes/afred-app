@@ -14,35 +14,48 @@ class BackupService {
     'alfred_detect_rules',
   ];
 
-  static Map<String, dynamic> exportBackupMap() {
+  static Future<Map<String, dynamic>> exportBackupMap() async {
     final result = <String, dynamic>{
       'version': 1,
       'exportedAt': DateTime.now().toIso8601String(),
       'boxes': <String, dynamic>{},
+      'skipped': <String>[],
     };
 
     final boxesMap = result['boxes'] as Map<String, dynamic>;
+    final skipped = result['skipped'] as List<String>;
 
     for (final boxName in boxNames) {
-      final box = Hive.box(boxName);
-      final entries = <Map<String, dynamic>>[];
+      try {
+        Box box;
+        if (Hive.isBoxOpen(boxName)) {
+          box = Hive.box(boxName);
+        } else {
+          box = await Hive.openBox(boxName);
+        }
 
-      for (final key in box.keys) {
-        final value = box.get(key);
-        entries.add({
-          'key': key,
-          'value': _normalize(value),
-        });
+        final entries = <Map<String, dynamic>>[];
+
+        for (final key in box.keys) {
+          final value = box.get(key);
+          entries.add({
+            'key': key,
+            'value': _normalize(value),
+          });
+        }
+
+        boxesMap[boxName] = entries;
+      } catch (e) {
+        skipped.add(boxName);
+        continue;
       }
-
-      boxesMap[boxName] = entries;
     }
 
     return result;
   }
 
-  static String exportBackupJson({bool pretty = true}) {
-    final data = exportBackupMap();
+  static Future<String> exportBackupJson({bool pretty = true}) async {
+    final data = await exportBackupMap();
     if (pretty) {
       return const JsonEncoder.withIndent('  ').convert(data);
     }
@@ -54,20 +67,29 @@ class BackupService {
     bool clearBeforeRestore = true,
   }) async {
     final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-    final boxes = Map<String, dynamic>.from(decoded['boxes'] as Map);
+    final boxesData = Map<String, dynamic>.from(decoded['boxes'] as Map? ?? {});
 
     for (final boxName in boxNames) {
-      final box = Hive.box(boxName);
+      try {
+        Box box;
+        if (Hive.isBoxOpen(boxName)) {
+          box = Hive.box(boxName);
+        } else {
+          box = await Hive.openBox(boxName);
+        }
 
-      if (clearBeforeRestore) {
-        await box.clear();
-      }
+        if (clearBeforeRestore) {
+          await box.clear();
+        }
 
-      final rawEntries = (boxes[boxName] as List?) ?? const [];
+        final rawEntries = (boxesData[boxName] as List?) ?? const [];
 
-      for (final raw in rawEntries) {
-        final entry = Map<String, dynamic>.from(raw as Map);
-        await box.put(entry['key'], _denormalize(entry['value']));
+        for (final raw in rawEntries) {
+          final entry = Map<String, dynamic>.from(raw as Map);
+          await box.put(entry['key'], _denormalize(entry['value']));
+        }
+      } catch (e) {
+        continue;
       }
     }
   }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-06-14T20:25:12.322",
+  "exportedAt": "2026-06-30T21:42:10.294",
   "boxes": {
     "alfred_box": [
       {
@@ -8,9 +8,222 @@
         "value": {
           "title": "Abacus AI",
           "module": "Finanças",
-          "timestamp": "2026-06-14T19:34:21.263",
+          "timestamp": "2026-06-14T00:45:00.000",
           "isDone": false,
           "amount": 49.9,
+          "category": "Assinaturas",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 49.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 2,
+        "value": {
+          "title": "Amazon Areia",
+          "module": "Finanças",
+          "timestamp": "2026-06-15T11:15:00.000",
+          "isDone": false,
+          "amount": 39.9,
+          "category": "Pets",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 39.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 3,
+        "value": {
+          "title": "Clube Ifood",
+          "module": "Finanças",
+          "timestamp": "2026-06-15T08:25:00.000",
+          "isDone": false,
+          "amount": 5.95,
+          "category": "Assinaturas",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 5.95,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 4,
+        "value": {
+          "title": "Rios Gourmet",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T21:50:00.000",
+          "isDone": false,
+          "amount": 159.5,
+          "category": "Lazer",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 159.5,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 5,
+        "value": {
+          "title": "99 App",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T18:00:00.000",
+          "isDone": false,
+          "amount": 49,
+          "category": "Transporte",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 49,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 6,
+        "value": {
+          "title": "Fux Brasil",
+          "module": "Finanças",
+          "timestamp": "2026-06-16T12:32:58.999",
+          "isDone": true,
+          "amount": 26.9,
+          "category": "Assinaturas",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false
+        }
+      },
+      {
+        "key": 7,
+        "value": {
+          "title": "Mercado Livre",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T17:15:00.000",
+          "isDone": false,
+          "amount": 128.9,
+          "category": "Casa",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 8,
+        "value": {
+          "title": "Lanches Tia Deborah",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T16:20:00.000",
+          "isDone": false,
+          "amount": 11.99,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 9,
+        "value": {
+          "title": "Ortalis",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T16:15:00.000",
+          "isDone": false,
+          "amount": 72.36,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 10,
+        "value": {
+          "title": "Camisa do Brasil",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T12:55:00.000",
+          "isDone": false,
+          "amount": 100,
+          "category": "Compras",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 100,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 11,
+        "value": {
+          "title": "TotalPass",
+          "module": "Finanças",
+          "timestamp": "2026-06-13T05:25:00.000",
+          "isDone": false,
+          "amount": 129.9,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 12,
+        "value": {
+          "title": "Ifood",
+          "module": "Finanças",
+          "timestamp": "2026-06-12T19:30:00.000",
+          "isDone": false,
+          "amount": 229.78,
+          "category": "Delivery",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 13,
+        "value": {
+          "title": "Google",
+          "module": "Finanças",
+          "timestamp": "2026-06-12T16:10:00.000",
+          "isDone": false,
+          "amount": 9.99,
           "category": "Assinaturas",
           "paymentMethod": "Crédito",
           "isIncome": false,
@@ -20,19 +233,2874 @@
         }
       },
       {
-        "key": 1,
+        "key": 14,
         "value": {
-          "title": "teste",
+          "title": "Capcut",
           "module": "Finanças",
-          "timestamp": "2026-06-14T19:45:26.814",
+          "timestamp": "2026-06-12T15:55:00.000",
           "isDone": false,
-          "amount": 56,
-          "category": "Lazer",
-          "paymentMethod": "Débito",
+          "amount": 3.5,
+          "category": "Assinaturas",
+          "paymentMethod": "Crédito",
           "isIncome": false,
-          "cardId": "1781477146188",
-          "cardName": "Nubank Débito",
-          "cardType": "Débito"
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 32,
+        "value": {
+          "title": "C&A (1/3)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T15:40:00.000",
+          "isDone": false,
+          "amount": 99.99,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645263392",
+          "originalAmount": 299.97,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 33,
+        "value": {
+          "title": "C&A (2/3)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T15:40:00.000",
+          "isDone": false,
+          "amount": 99.99,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645263392",
+          "originalAmount": 299.97,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 34,
+        "value": {
+          "title": "C&A (3/3)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T15:40:00.000",
+          "isDone": false,
+          "amount": 99.99,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645263392",
+          "originalAmount": 299.97,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 35,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (1/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 36,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (2/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 37,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (3/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 38,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 39,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 40,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-10-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 41,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-11-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 42,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-12-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 43,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (9/12)",
+          "module": "Finanças",
+          "timestamp": "2027-01-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 44,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (10/12)",
+          "module": "Finanças",
+          "timestamp": "2027-02-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 45,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (11/12)",
+          "module": "Finanças",
+          "timestamp": "2027-03-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 46,
+        "value": {
+          "title": "Hortmart - Curso de Inglês (12/12)",
+          "module": "Finanças",
+          "timestamp": "2027-04-10T09:30:00.000",
+          "isDone": false,
+          "amount": 32.55,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645325227",
+          "originalAmount": 390.6,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 47,
+        "value": {
+          "title": "Serasa (1/12)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 48,
+        "value": {
+          "title": "Serasa (2/12)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 49,
+        "value": {
+          "title": "Serasa (3/12)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 50,
+        "value": {
+          "title": "Serasa (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 51,
+        "value": {
+          "title": "Serasa (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 52,
+        "value": {
+          "title": "Serasa (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 53,
+        "value": {
+          "title": "Serasa (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 54,
+        "value": {
+          "title": "Serasa (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 55,
+        "value": {
+          "title": "Serasa (9/12)",
+          "module": "Finanças",
+          "timestamp": "2026-10-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 56,
+        "value": {
+          "title": "Serasa (10/12)",
+          "module": "Finanças",
+          "timestamp": "2026-11-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 57,
+        "value": {
+          "title": "Serasa (11/12)",
+          "module": "Finanças",
+          "timestamp": "2026-12-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.66,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 58,
+        "value": {
+          "title": "Serasa (12/12)",
+          "module": "Finanças",
+          "timestamp": "2027-01-04T13:55:00.000",
+          "isDone": false,
+          "amount": 16.64,
+          "category": "Outros",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645380647",
+          "originalAmount": 199.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 59,
+        "value": {
+          "title": "Pacheco (1/3)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T17:55:00.000",
+          "isDone": false,
+          "amount": 68.57,
+          "category": "Saúde",
+          "installmentTotal": 3,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645423903",
+          "originalAmount": 205.7,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 60,
+        "value": {
+          "title": "Pacheco (2/3)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T17:55:00.000",
+          "isDone": false,
+          "amount": 68.57,
+          "category": "Saúde",
+          "installmentTotal": 3,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645423903",
+          "originalAmount": 205.7,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 61,
+        "value": {
+          "title": "Pacheco (3/3)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T17:55:00.000",
+          "isDone": false,
+          "amount": 68.56,
+          "category": "Saúde",
+          "installmentTotal": 3,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645423903",
+          "originalAmount": 205.7,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 62,
+        "value": {
+          "title": "Caveira (1/12)",
+          "module": "Finanças",
+          "timestamp": "2025-10-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 63,
+        "value": {
+          "title": "Caveira (2/12)",
+          "module": "Finanças",
+          "timestamp": "2025-11-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 64,
+        "value": {
+          "title": "Caveira (3/12)",
+          "module": "Finanças",
+          "timestamp": "2025-12-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 65,
+        "value": {
+          "title": "Caveira (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-01-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 66,
+        "value": {
+          "title": "Caveira (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 67,
+        "value": {
+          "title": "Caveira (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 68,
+        "value": {
+          "title": "Caveira (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 69,
+        "value": {
+          "title": "Caveira (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 70,
+        "value": {
+          "title": "Caveira (9/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 71,
+        "value": {
+          "title": "Caveira (10/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 72,
+        "value": {
+          "title": "Caveira (11/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 73,
+        "value": {
+          "title": "Caveira (12/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T19:45:00.000",
+          "isDone": false,
+          "amount": 89.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645473282",
+          "originalAmount": 1078.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 74,
+        "value": {
+          "title": "Amazon (1/5)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T16:45:00.000",
+          "isDone": false,
+          "amount": 31.02,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645516748",
+          "originalAmount": 155.08,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 75,
+        "value": {
+          "title": "Amazon (2/5)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T16:45:00.000",
+          "isDone": false,
+          "amount": 31.02,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645516748",
+          "originalAmount": 155.08,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 76,
+        "value": {
+          "title": "Amazon (3/5)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T16:45:00.000",
+          "isDone": false,
+          "amount": 31.02,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645516748",
+          "originalAmount": 155.08,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 77,
+        "value": {
+          "title": "Amazon (4/5)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T16:45:00.000",
+          "isDone": false,
+          "amount": 31.02,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645516748",
+          "originalAmount": 155.08,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 78,
+        "value": {
+          "title": "Amazon (5/5)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T16:45:00.000",
+          "isDone": false,
+          "amount": 31,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645516748",
+          "originalAmount": 155.08,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 79,
+        "value": {
+          "title": "QConcursos (1/12)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 80,
+        "value": {
+          "title": "QConcursos (2/12)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 81,
+        "value": {
+          "title": "QConcursos (3/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 82,
+        "value": {
+          "title": "QConcursos (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 83,
+        "value": {
+          "title": "QConcursos (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 84,
+        "value": {
+          "title": "QConcursos (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 85,
+        "value": {
+          "title": "QConcursos (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 86,
+        "value": {
+          "title": "QConcursos (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-10-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 87,
+        "value": {
+          "title": "QConcursos (9/12)",
+          "module": "Finanças",
+          "timestamp": "2026-11-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 88,
+        "value": {
+          "title": "QConcursos (10/12)",
+          "module": "Finanças",
+          "timestamp": "2026-12-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 89,
+        "value": {
+          "title": "QConcursos (11/12)",
+          "module": "Finanças",
+          "timestamp": "2027-01-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 90,
+        "value": {
+          "title": "QConcursos (12/12)",
+          "module": "Finanças",
+          "timestamp": "2027-02-04T13:20:00.000",
+          "isDone": false,
+          "amount": 47.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645559968",
+          "originalAmount": 574.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 91,
+        "value": {
+          "title": "Nova America - Tênis (1/3)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T21:15:00.000",
+          "isDone": false,
+          "amount": 56.65,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645599099",
+          "originalAmount": 169.96,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 92,
+        "value": {
+          "title": "Nova America - Tênis (2/3)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T21:15:00.000",
+          "isDone": false,
+          "amount": 56.65,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645599099",
+          "originalAmount": 169.96,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 93,
+        "value": {
+          "title": "Nova America - Tênis (3/3)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T21:15:00.000",
+          "isDone": false,
+          "amount": 56.66,
+          "category": "Compras",
+          "installmentTotal": 3,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645599099",
+          "originalAmount": 169.96,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 94,
+        "value": {
+          "title": "MSC - Cruzeiro (1/12)",
+          "module": "Finanças",
+          "timestamp": "2026-01-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 95,
+        "value": {
+          "title": "MSC - Cruzeiro (2/12)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 96,
+        "value": {
+          "title": "MSC - Cruzeiro (3/12)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 97,
+        "value": {
+          "title": "MSC - Cruzeiro (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 98,
+        "value": {
+          "title": "MSC - Cruzeiro (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 99,
+        "value": {
+          "title": "MSC - Cruzeiro (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 100,
+        "value": {
+          "title": "MSC - Cruzeiro (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 101,
+        "value": {
+          "title": "MSC - Cruzeiro (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 102,
+        "value": {
+          "title": "MSC - Cruzeiro (9/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 103,
+        "value": {
+          "title": "MSC - Cruzeiro (10/12)",
+          "module": "Finanças",
+          "timestamp": "2026-10-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 104,
+        "value": {
+          "title": "MSC - Cruzeiro (11/12)",
+          "module": "Finanças",
+          "timestamp": "2026-11-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 105,
+        "value": {
+          "title": "MSC - Cruzeiro (12/12)",
+          "module": "Finanças",
+          "timestamp": "2026-12-04T16:05:00.000",
+          "isDone": false,
+          "amount": 947,
+          "category": "Viagem",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645642109",
+          "originalAmount": 11364,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 106,
+        "value": {
+          "title": "Casas Bahia (1/10)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 107,
+        "value": {
+          "title": "Casas Bahia (2/10)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 108,
+        "value": {
+          "title": "Casas Bahia (3/10)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 109,
+        "value": {
+          "title": "Casas Bahia (4/10)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 110,
+        "value": {
+          "title": "Casas Bahia (5/10)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 111,
+        "value": {
+          "title": "Casas Bahia (6/10)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 112,
+        "value": {
+          "title": "Casas Bahia (7/10)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 113,
+        "value": {
+          "title": "Casas Bahia (8/10)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 114,
+        "value": {
+          "title": "Casas Bahia (9/10)",
+          "module": "Finanças",
+          "timestamp": "2026-10-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 115,
+        "value": {
+          "title": "Casas Bahia (10/10)",
+          "module": "Finanças",
+          "timestamp": "2026-11-04T10:45:00.000",
+          "isDone": false,
+          "amount": 7.9,
+          "category": "Compras",
+          "installmentTotal": 10,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645688897",
+          "originalAmount": 79,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 116,
+        "value": {
+          "title": "Netflix",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T05:15:00.000",
+          "isDone": false,
+          "amount": 20.9,
+          "category": "Assinaturas",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 117,
+        "value": {
+          "title": "Riachuelo (1/5)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T12:00:00.000",
+          "isDone": false,
+          "amount": 40.84,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645767715",
+          "originalAmount": 204.19,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 118,
+        "value": {
+          "title": "Riachuelo (2/5)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T12:00:00.000",
+          "isDone": false,
+          "amount": 40.84,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645767715",
+          "originalAmount": 204.19,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 119,
+        "value": {
+          "title": "Riachuelo (3/5)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T12:00:00.000",
+          "isDone": false,
+          "amount": 40.84,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645767715",
+          "originalAmount": 204.19,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 120,
+        "value": {
+          "title": "Riachuelo (4/5)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T12:00:00.000",
+          "isDone": false,
+          "amount": 40.84,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645767715",
+          "originalAmount": 204.19,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 121,
+        "value": {
+          "title": "Riachuelo (5/5)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T12:00:00.000",
+          "isDone": false,
+          "amount": 40.83,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645767715",
+          "originalAmount": 204.19,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 122,
+        "value": {
+          "title": "Pix no crédito",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T18:36:00.000",
+          "isDone": false,
+          "amount": 147.81,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 123,
+        "value": {
+          "title": "Riachuelo (1/5)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T11:36:00.000",
+          "isDone": false,
+          "amount": 36.4,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645850449",
+          "originalAmount": 181.98,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 124,
+        "value": {
+          "title": "Riachuelo (2/5)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T11:36:00.000",
+          "isDone": false,
+          "amount": 36.4,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645850449",
+          "originalAmount": 181.98,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 125,
+        "value": {
+          "title": "Riachuelo (3/5)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T11:36:00.000",
+          "isDone": false,
+          "amount": 36.4,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645850449",
+          "originalAmount": 181.98,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 126,
+        "value": {
+          "title": "Riachuelo (4/5)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T11:36:00.000",
+          "isDone": false,
+          "amount": 36.4,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645850449",
+          "originalAmount": 181.98,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 127,
+        "value": {
+          "title": "Riachuelo (5/5)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T11:36:00.000",
+          "isDone": false,
+          "amount": 36.38,
+          "category": "Compras",
+          "installmentTotal": 5,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645850449",
+          "originalAmount": 181.98,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 128,
+        "value": {
+          "title": "Ortalis",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T13:35:00.000",
+          "isDone": false,
+          "amount": 99.78,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 129,
+        "value": {
+          "title": "Lanches Tia Deborah",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T16:00:00.000",
+          "isDone": false,
+          "amount": 25.68,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 130,
+        "value": {
+          "title": "Combustível",
+          "module": "Finanças",
+          "timestamp": "2026-06-05T12:00:00.000",
+          "isDone": false,
+          "amount": 100,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 131,
+        "value": {
+          "title": "Pacheco",
+          "module": "Finanças",
+          "timestamp": "2026-06-05T09:35:00.000",
+          "isDone": false,
+          "amount": 67.85,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 132,
+        "value": {
+          "title": "Udemy",
+          "module": "Finanças",
+          "timestamp": "2026-06-06T08:30:00.000",
+          "isDone": false,
+          "amount": 35.9,
+          "category": "Estudos",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 35.9,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 133,
+        "value": {
+          "title": "Drogaria Venancio",
+          "module": "Finanças",
+          "timestamp": "2026-06-07T11:15:00.000",
+          "isDone": false,
+          "amount": 24.98,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 134,
+        "value": {
+          "title": "Guanabara",
+          "module": "Finanças",
+          "timestamp": "2026-06-06T19:45:00.000",
+          "isDone": false,
+          "amount": 997.24,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 135,
+        "value": {
+          "title": "shoppe",
+          "module": "Finanças",
+          "timestamp": "2026-06-06T17:10:00.000",
+          "isDone": false,
+          "amount": 69.99,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 136,
+        "value": {
+          "title": "99food",
+          "module": "Finanças",
+          "timestamp": "2026-06-06T21:30:00.000",
+          "isDone": false,
+          "amount": 111.31,
+          "category": "Delivery",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 137,
+        "value": {
+          "title": "Rio Card",
+          "module": "Finanças",
+          "timestamp": "2026-06-08T08:00:00.000",
+          "isDone": false,
+          "amount": 60,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 138,
+        "value": {
+          "title": "Já É",
+          "module": "Finanças",
+          "timestamp": "2026-06-08T08:00:00.000",
+          "isDone": false,
+          "amount": 16,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 139,
+        "value": {
+          "title": "Bar do Boi",
+          "module": "Finanças",
+          "timestamp": "2026-06-09T08:20:00.000",
+          "isDone": false,
+          "amount": 16,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 140,
+        "value": {
+          "title": "99app",
+          "module": "Finanças",
+          "timestamp": "2026-06-09T17:50:00.000",
+          "isDone": false,
+          "amount": 24.9,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 141,
+        "value": {
+          "title": "Pizza Fornalle",
+          "module": "Finanças",
+          "timestamp": "2026-06-11T22:35:00.000",
+          "isDone": false,
+          "amount": 161.26,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 142,
+        "value": {
+          "title": "Shopping das Frutas",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T17:05:00.000",
+          "isDone": false,
+          "amount": 22.27,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 143,
+        "value": {
+          "title": "Gastei 104,90 Crédito na Centauro",
+          "module": "Finanças",
+          "timestamp": "2026-06-17T18:10:00.000",
+          "isDone": false,
+          "amount": 104.98,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardName": "Nubank Credito"
+        }
+      },
+      {
+        "key": 144,
+        "value": {
+          "title": "Estacionamento",
+          "module": "Finanças",
+          "timestamp": "2026-06-18T16:25:00.000",
+          "isDone": false,
+          "amount": 19,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardName": "Nubank Credito"
+        }
+      },
+      {
+        "key": 145,
+        "value": {
+          "title": "Riachuelo (1/2)",
+          "module": "Finanças",
+          "timestamp": "2026-06-18T16:21:00.000",
+          "isDone": false,
+          "amount": 53.99,
+          "category": "Compras",
+          "installmentTotal": 2,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781876944565",
+          "originalAmount": 107.99,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardName": "Nubank Credito"
+        }
+      },
+      {
+        "key": 146,
+        "value": {
+          "title": "Riachuelo (2/2)",
+          "module": "Finanças",
+          "timestamp": "2026-07-18T16:21:00.000",
+          "isDone": false,
+          "amount": 54,
+          "category": "Compras",
+          "installmentTotal": 2,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781876944565",
+          "originalAmount": 107.99,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardName": "Nubank Credito"
+        }
+      },
+      {
+        "key": 147,
+        "value": {
+          "title": "Bet",
+          "module": "Finanças",
+          "timestamp": "2026-06-19T11:05:00.000",
+          "isDone": false,
+          "amount": 50,
+          "category": "Lazer",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false,
+          "cardName": null
+        }
+      },
+      {
+        "key": "1781619365000",
+        "value": {
+          "title": "estudei 30 min de Curso Java Spring Boot",
+          "module": "Estudos",
+          "timestamp": "2026-06-16T11:16:05.000",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781619397037",
+        "value": {
+          "title": "Fazer nebulização no Jolie",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:16:37.037",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781619416177",
+        "value": {
+          "title": "Dar omega para o Jolie",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:16:56.177",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781619437225",
+        "value": {
+          "title": "pingar colírio no Jolie - 2x",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:17:17.225",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781619452756",
+        "value": {
+          "title": "Estudar Inglês",
+          "module": "Estudos",
+          "timestamp": "2026-06-16T11:17:32.756",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781619535662",
+        "value": {
+          "title": "Reclamar com a VIVO da fatura",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:18:55.662",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781619587374",
+        "value": {
+          "title": "Lanche",
+          "module": "Alimentação",
+          "timestamp": "2026-06-16T12:00:00.000",
+          "isDone": true,
+          "mealType": "Lanche da tarde",
+          "mealTypeKey": "1781636131566147681202"
+        }
+      },
+      {
+        "key": "1781621596432",
+        "value": {
+          "title": "trabalhar no Projeto Alfred",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:53:16.432",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781621633950",
+        "value": {
+          "title": "pingar colírio no Jole 3x",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:53:53.950",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781621648818",
+        "value": {
+          "title": "Pingar Colírio no Jolie 4x",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:54:08.818",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781621671079",
+        "value": {
+          "title": "Leitura do Livro Biblioteca Esquecida",
+          "module": "Tarefas",
+          "timestamp": "2026-06-16T11:54:31.079",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781624066101",
+        "value": {
+          "title": "estudei 30 min de Curso Java Spring Boot",
+          "module": "Estudos",
+          "timestamp": "2026-06-16T12:34:26.101",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781625138876",
+        "value": {
+          "title": "almoçar",
+          "module": "Alimentação",
+          "timestamp": "2026-06-16T15:30:00.000",
+          "isDone": true,
+          "mealType": "Almoço",
+          "mealTypeKey": "1781636131565272290228"
+        }
+      },
+      {
+        "key": "1781644373305",
+        "value": {
+          "title": "Lanche da tarde",
+          "module": "Alimentação",
+          "timestamp": "2026-06-16T18:30:00.000",
+          "isDone": false,
+          "mealType": "Lanche da tarde",
+          "mealTypeKey": "1781636131566147681202",
+          "description": null
+        }
+      },
+      {
+        "key": "1781644391039",
+        "value": {
+          "title": "Jantar",
+          "module": "Alimentação",
+          "timestamp": "2026-06-16T21:30:00.000",
+          "isDone": false,
+          "mealType": "Jantar",
+          "mealTypeKey": "1781636131567285750017",
+          "description": null
+        }
+      },
+      {
+        "key": "1781645146495-1-2025114",
+        "value": {
+          "title": "Estratégia Concursos (1/12)",
+          "module": "Finanças",
+          "timestamp": "2025-11-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-10-202684",
+        "value": {
+          "title": "Estratégia Concursos (10/12)",
+          "module": "Finanças",
+          "timestamp": "2026-08-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 10,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-11-202694",
+        "value": {
+          "title": "Estratégia Concursos (11/12)",
+          "module": "Finanças",
+          "timestamp": "2026-09-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 11,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-12-2026104",
+        "value": {
+          "title": "Estratégia Concursos (12/12)",
+          "module": "Finanças",
+          "timestamp": "2026-10-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 12,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-2-2025124",
+        "value": {
+          "title": "Estratégia Concursos (2/12)",
+          "module": "Finanças",
+          "timestamp": "2025-12-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-3-202614",
+        "value": {
+          "title": "Estratégia Concursos (3/12)",
+          "module": "Finanças",
+          "timestamp": "2026-01-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-4-202624",
+        "value": {
+          "title": "Estratégia Concursos (4/12)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-5-202634",
+        "value": {
+          "title": "Estratégia Concursos (5/12)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-6-202644",
+        "value": {
+          "title": "Estratégia Concursos (6/12)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 6,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-7-202654",
+        "value": {
+          "title": "Estratégia Concursos (7/12)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 7,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-8-202664",
+        "value": {
+          "title": "Estratégia Concursos (8/12)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 8,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645146495-9-202674",
+        "value": {
+          "title": "Estratégia Concursos (9/12)",
+          "module": "Finanças",
+          "timestamp": "2026-07-04T00:35:00.000",
+          "isDone": false,
+          "amount": 74.9,
+          "category": "Estudos",
+          "installmentTotal": 12,
+          "installmentNumber": 9,
+          "installmentGroupId": "1781645146495",
+          "originalAmount": 898.8,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645209768-1-202624",
+        "value": {
+          "title": "Smiles (Passagem Palmas) (1/5)",
+          "module": "Finanças",
+          "timestamp": "2026-02-04T19:45:00.000",
+          "isDone": false,
+          "amount": 294.4,
+          "category": "Viagem",
+          "installmentTotal": 5,
+          "installmentNumber": 1,
+          "installmentGroupId": "1781645209768",
+          "originalAmount": 1472,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645209768-2-202634",
+        "value": {
+          "title": "Smiles (Passagem Palmas) (2/5)",
+          "module": "Finanças",
+          "timestamp": "2026-03-04T19:45:00.000",
+          "isDone": false,
+          "amount": 294.4,
+          "category": "Viagem",
+          "installmentTotal": 5,
+          "installmentNumber": 2,
+          "installmentGroupId": "1781645209768",
+          "originalAmount": 1472,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645209768-3-202644",
+        "value": {
+          "title": "Smiles (Passagem Palmas) (3/5)",
+          "module": "Finanças",
+          "timestamp": "2026-04-04T19:45:00.000",
+          "isDone": false,
+          "amount": 294.4,
+          "category": "Viagem",
+          "installmentTotal": 5,
+          "installmentNumber": 3,
+          "installmentGroupId": "1781645209768",
+          "originalAmount": 1472,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645209768-4-202654",
+        "value": {
+          "title": "Smiles (Passagem Palmas) (4/5)",
+          "module": "Finanças",
+          "timestamp": "2026-05-04T19:45:00.000",
+          "isDone": false,
+          "amount": 294.4,
+          "category": "Viagem",
+          "installmentTotal": 5,
+          "installmentNumber": 4,
+          "installmentGroupId": "1781645209768",
+          "originalAmount": 1472,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781645209768-5-202664",
+        "value": {
+          "title": "Smiles (Passagem Palmas) (5/5)",
+          "module": "Finanças",
+          "timestamp": "2026-06-04T19:45:00.000",
+          "isDone": false,
+          "amount": 294.4,
+          "category": "Viagem",
+          "installmentTotal": 5,
+          "installmentNumber": 5,
+          "installmentGroupId": "1781645209768",
+          "originalAmount": 1472,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": "1781711600840",
+        "value": {
+          "title": "Almoço",
+          "module": "Alimentação",
+          "timestamp": "2026-06-17T13:10:00.000",
+          "isDone": true,
+          "mealType": "Almoço",
+          "mealTypeKey": "1781636131565272290228",
+          "description": null
+        }
+      },
+      {
+        "key": "1781711621698",
+        "value": {
+          "title": "Café da manhã",
+          "module": "Alimentação",
+          "timestamp": "2026-06-17T09:30:00.000",
+          "isDone": true,
+          "mealType": "Café da manhã",
+          "mealTypeKey": "1781636131557364691185",
+          "description": null
+        }
+      },
+      {
+        "key": "1781711650949",
+        "value": {
+          "title": "Entrevista com Rodrigo - CWI - 15:30",
+          "module": "Tarefas",
+          "timestamp": "2026-06-17T12:54:10.949",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781711730897",
+        "value": {
+          "title": "Pingar colírio no Jolie - 1/4",
+          "module": "Tarefas",
+          "timestamp": "2026-06-17T12:55:30.897",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781711835475",
+        "value": {
+          "title": "Trabalhar no Projeto Alfred",
+          "module": "Tarefas",
+          "timestamp": "2026-06-17T12:57:15.475",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781711883006",
+        "value": {
+          "title": "Estudar Curso Java Spring",
+          "module": "Estudos",
+          "timestamp": "2026-06-17T12:58:03.006",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781711895189",
+        "value": {
+          "title": "Estudar Curso de Inglês",
+          "module": "Estudos",
+          "timestamp": "2026-06-17T12:58:15.189",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781711918396",
+        "value": {
+          "title": "Ler livro a Biblioteca Esquecida - min 10 páginas",
+          "module": "Tarefas",
+          "timestamp": "2026-06-17T12:58:38.396",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781713084011",
+        "value": {
+          "title": "Lanche da tarde",
+          "module": "Alimentação",
+          "timestamp": "2026-06-17T16:40:00.000",
+          "isDone": false,
+          "mealType": "Lanche da tarde",
+          "mealTypeKey": "1781636131566147681202",
+          "description": null
+        }
+      },
+      {
+        "key": "1781794913831",
+        "value": {
+          "title": "Fazer checkin no voo e escolher assento - 18:25",
+          "module": "Tarefas",
+          "timestamp": "2026-06-18T12:01:53.831",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781794946130",
+        "value": {
+          "title": "Cortar o cabelo - 12:00",
+          "module": "Compromissos",
+          "timestamp": "2026-06-19T12:02:00.000",
+          "isDone": true
+        }
+      },
+      {
+        "key": "1781794991572",
+        "value": {
+          "title": "Almoço",
+          "module": "Alimentação",
+          "timestamp": "2026-06-18T13:00:00.000",
+          "isDone": false,
+          "mealType": "Almoço",
+          "mealTypeKey": "1781636131565272290228",
+          "description": null
+        }
+      },
+      {
+        "key": "1781910260396",
+        "value": {
+          "title": "Ir ao Mercado",
+          "description": null,
+          "module": "Tarefas",
+          "createdAt": "2026-06-19T20:04:20.396",
+          "due": "2026-06-19T17:10:00.000",
+          "priority": "Média",
+          "recurrence": "Nenhuma",
+          "estimatedMinutes": null,
+          "tags": [],
+          "reminderMinutesBefore": 5,
+          "isDone": true
         }
       },
       {
@@ -68,6 +3136,83 @@
           "intensity": "Moderado",
           "notes": ""
         }
+      },
+      {
+        "key": "activity_1781562749816",
+        "value": {
+          "title": "Musculação — 60 min • Moderado",
+          "module": "Atividade Física",
+          "timestamp": "2026-06-15T20:32:00.000",
+          "isDone": false,
+          "activityLogKey": "1781562749816",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": ""
+        }
+      },
+      {
+        "key": "activity_1781619500869",
+        "value": {
+          "title": "Corrida — 6.00 km • Moderado",
+          "module": "Atividade Física",
+          "timestamp": "2026-06-16T11:18:00.000",
+          "isDone": false,
+          "activityLogKey": "1781619500869",
+          "activityName": "Corrida",
+          "unit": "km",
+          "durationMinutes": null,
+          "distanceKm": 6,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": ""
+        }
+      },
+      {
+        "key": "activity_1781635402925",
+        "value": {
+          "title": "Musculação — Treino B - Costas e Bíceps",
+          "module": "Atividade Física",
+          "timestamp": "2026-06-16T20:30:00.000",
+          "isDone": false,
+          "activityLogKey": "1781635402925",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 0,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "workoutPlanName": "Treino B - Costas e Bíceps"
+        }
+      },
+      {
+        "key": "tasks",
+        "value": [
+          {
+            "id": "1781557410939",
+            "title": "Entrevista CWI",
+            "description": "Videoconnferência com Rodrigo",
+            "isDone": false,
+            "dueDate": "2026-06-17T15:30:00.000",
+            "reminderMinutes": 60,
+            "createdAt": "2026-06-15T18:03:30.939",
+            "priority": "média"
+          },
+          {
+            "id": "1781557451092",
+            "title": "teste",
+            "description": "sdfsdf",
+            "isDone": false,
+            "dueDate": "2026-06-15T19:03:00.000",
+            "reminderMinutes": 30,
+            "createdAt": "2026-06-15T18:04:11.092",
+            "priority": "média"
+          }
+        ]
       }
     ],
     "alfred_sessions": [],
@@ -125,6 +3270,26 @@
       {
         "key": 6,
         "value": "Assinaturas"
+      },
+      {
+        "key": 7,
+        "value": "Pets"
+      },
+      {
+        "key": 8,
+        "value": "Compras"
+      },
+      {
+        "key": 9,
+        "value": "Delivery"
+      },
+      {
+        "key": 10,
+        "value": "Estudos"
+      },
+      {
+        "key": 11,
+        "value": "Viagem"
       }
     ],
     "cards": [
@@ -219,6 +3384,57 @@
           "timestamp": "2026-06-14T20:12:39.376",
           "createdAt": "2026-06-14T20:13:00.361"
         }
+      },
+      {
+        "key": "1781562749816",
+        "value": {
+          "activityKey": "1781476574077-musculacao",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-06-15T20:32:00.000",
+          "createdAt": "2026-06-15T19:32:29.816",
+          "workoutPlanKey": "1781561750784",
+          "workoutPlanName": "Treino A",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1781619500869",
+        "value": {
+          "activityKey": "1781476574079-corrida",
+          "activityName": "Corrida",
+          "unit": "km",
+          "durationMinutes": null,
+          "distanceKm": 6,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-06-16T11:18:00.000",
+          "createdAt": "2026-06-16T11:18:20.869"
+        }
+      },
+      {
+        "key": "1781635402925",
+        "value": {
+          "activityKey": "1781476574077-musculacao",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 0,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-06-16T20:30:00.000",
+          "createdAt": "2026-06-16T15:43:22.924",
+          "workoutPlanKey": "1781635337735",
+          "workoutPlanName": "Treino B - Costas e Bíceps",
+          "isDone": false
+        }
       }
     ],
     "alfred_detect_rules": [
@@ -245,7 +3461,8 @@
           "muscula",
           "natação",
           "ciclismo",
-          "yoga"
+          "yoga",
+          "correr"
         ]
       },
       {
@@ -280,5 +3497,6 @@
         ]
       }
     ]
-  }
+  },
+  "skipped": []
 }

@@ -13,18 +13,21 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _characterController;
   late AnimationController _textController;
   late AnimationController _pulseController;
+  late AnimationController _buttonController;
 
   late Animation<double> _characterFade;
   late Animation<Offset> _characterSlide;
   late Animation<double> _textFade;
   late Animation<Offset> _textSlide;
   late Animation<double> _pulse;
+  late Animation<double> _buttonFade;
+  late Animation<Offset> _buttonSlide;
 
   @override
   void initState() {
     super.initState();
 
-    // ── animação do personagem ───────────────────────────────────────────────
+    // ── personagem ───────────────────────────────────────────────────────────
     _characterController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -41,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOutCubic,
     ));
 
-    // ── animação do texto ────────────────────────────────────────────────────
+    // ── texto ────────────────────────────────────────────────────────────────
     _textController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -58,7 +61,24 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOutCubic,
     ));
 
-    // ── pulso suave no personagem ────────────────────────────────────────────
+    // ── botão ────────────────────────────────────────────────────────────────
+    _buttonController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _buttonFade = CurvedAnimation(
+      parent: _buttonController,
+      curve: Curves.easeIn,
+    );
+    _buttonSlide = Tween<Offset>(
+      begin: const Offset(0, 0.4),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _buttonController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // ── pulso suave ──────────────────────────────────────────────────────────
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -72,18 +92,8 @@ class _SplashScreenState extends State<SplashScreen>
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _textController.forward();
     });
-
-    // ── navegar para home após 3.5s ──────────────────────────────────────────
-    Future.delayed(const Duration(milliseconds: 3500), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomeScreen(),
-          transitionsBuilder: (_, anim, __, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 700),
-        ),
-      );
+    Future.delayed(const Duration(milliseconds: 1100), () {
+      if (mounted) _buttonController.forward();
     });
   }
 
@@ -92,7 +102,19 @@ class _SplashScreenState extends State<SplashScreen>
     _characterController.dispose();
     _textController.dispose();
     _pulseController.dispose();
+    _buttonController.dispose();
     super.dispose();
+  }
+
+  void _goToHome() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const HomeScreen(),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: const Duration(milliseconds: 700),
+      ),
+    );
   }
 
   @override
@@ -103,7 +125,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: const Color(0xFF0A0E1A),
       body: Stack(
         children: [
-          // ── fundo com gradiente sutil ──────────────────────────────────────
+          // ── gradiente de fundo ─────────────────────────────────────────────
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
@@ -157,7 +179,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Center(
                     child: Image.asset(
                       'assets/images/alfred_splash.png',
-                      height: size.height * 0.62,
+                      height: size.height * 0.58,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -166,81 +188,113 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
 
-          // ── texto e subtítulo ─────────────────────────────────────────────
+          // ── texto + botão ─────────────────────────────────────────────────
           Positioned(
-            bottom: size.height * 0.08,
+            bottom: size.height * 0.06,
             left: 0,
             right: 0,
-            child: FadeTransition(
-              opacity: _textFade,
-              child: SlideTransition(
-                position: _textSlide,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // linha decorativa
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── nome e subtítulo ─────────────────────────────────────────
+                FadeTransition(
+                  opacity: _textFade,
+                  child: SlideTransition(
+                    position: _textSlide,
+                    child: Column(
                       children: [
-                        Container(
-                          width: 40, height: 1,
-                          color: Colors.white.withOpacity(0.2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 40, height: 1,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              width: 8, height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF3D6FFF),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              width: 40, height: 1,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 8, height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF3D6FFF),
-                            shape: BoxShape.circle,
+                        const SizedBox(height: 16),
+                        const Text(
+                          'ALFRED',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 38,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 10,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 40, height: 1,
-                          color: Colors.white.withOpacity(0.2),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Seu organizador pessoal',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.45),
+                            fontSize: 13,
+                            letterSpacing: 2.5,
+                            fontWeight: FontWeight.w300,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-
-                    // nome do app
-                    const Text(
-                      'ALFRED',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 38,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 10,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // subtítulo
-                    Text(
-                      'Seu organizador pessoal',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.45),
-                        fontSize: 13,
-                        letterSpacing: 2.5,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // indicador de carregamento
-                    SizedBox(
-                      width: 120,
-                      child: LinearProgressIndicator(
-                        backgroundColor: Colors.white.withOpacity(0.08),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF3D6FFF),
-                        ),
-                        minHeight: 2,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 36),
+
+                // ── botão iniciar ─────────────────────────────────────────────
+                FadeTransition(
+                  opacity: _buttonFade,
+                  child: SlideTransition(
+                    position: _buttonSlide,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: _goToHome,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3D6FFF),
+                            foregroundColor: Colors.white,
+                            elevation: 8,
+                            shadowColor:
+                                const Color(0xFF3D6FFF).withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Iniciar',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Icon(Icons.arrow_forward_rounded, size: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

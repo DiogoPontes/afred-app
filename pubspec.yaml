@@ -10,13 +10,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    
+  flutter_localizations:
+    sdk: flutter
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  intl: ^0.17.0
+  intl: 0.20.2
   cupertino_icons: ^1.0.8
   fl_chart: ^0.65.0
-  
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.4
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'finance_screen.dart';
 import 'module_items_screen.dart';
 import 'activity_screen.dart';
+import 'food_screen.dart';
+import 'tasks_screen.dart';
 
 class ModulesScreen extends StatefulWidget {
   const ModulesScreen({Key? key}) : super(key: key);
@@ -170,6 +172,11 @@ class _ModulesScreenState extends State<ModulesScreen> {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FinanceScreen()));
     } else if (moduleName == 'Atividade Física' || moduleName == 'Exercício') {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ActivityScreen()));
+    } else if (moduleName == 'Alimentação') {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FoodScreen()));
+    } else if (moduleName == 'Tarefas') {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TasksScreen()));
+    
     } else {
       Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => ModuleItemsScreen(moduleName: moduleName)));
