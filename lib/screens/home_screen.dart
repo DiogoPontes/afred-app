@@ -2,6 +2,7 @@
 import 'dart:collection';
 import 'focus_screen.dart';
 import 'detect_rules_screen.dart';
+import 'workout_plan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -235,6 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final activitiesBox = Hive.box('activities');
     final logsBox = Hive.box('activity_logs');
     final cardsBox = Hive.box('cards');
+    final workoutPlansBox = Hive.box('workout_plans');
 
     String detectedModule = 'Tarefas';
     String selectedModule = detectedModule;
@@ -269,6 +271,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final actNotesCtrl = TextEditingController();
     String actIntensity = 'Moderado';
     DateTime actDate = DateTime.now();
+    TimeOfDay actTime = TimeOfDay.now(); // <-- adicionado: horário
+    bool actIsDone = false; // <-- adicionado: marcado como realizado
+    // Novos: treino selecionado (para musculação)
+    String? selectedWorkoutPlanKey;
+    String? selectedWorkoutPlanName;
 
     // ALIMENTAÇÃO
     final mealTypesBox = Hive.box('meal_types');
@@ -770,107 +777,245 @@ class _HomeScreenState extends State<HomeScreen> {
                             actSelectedName = a['name'] ?? actSelectedName;
                             actSelectedUnit = a['unit'] ?? actSelectedUnit;
                           }
+                        } else {
+                          actSelectedName = '';
+                          actSelectedUnit = 'min';
                         }
+                        // Ao trocar atividade, resetar seleção de treino
+                        selectedWorkoutPlanKey = null;
+                        selectedWorkoutPlanName = null;
                       }),
                       decoration: const InputDecoration(labelText: 'Atividade'),
                     ),
                     const SizedBox(height: 8),
 
-                    if (actSelectedUnit == 'min') ...[
-                      TextField(
-                        controller: actDurationCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'Duração (minutos)'),
-                      ),
-                    ] else ...[
-                      TextField(
-                        controller: actDistanceCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(labelText: 'Distância (km)'),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: actCaloriesCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Calorias (opcional)'),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: actIntensity,
-                      items: const [
-                        DropdownMenuItem(value: 'Leve', child: Text('Leve')),
-                        DropdownMenuItem(value: 'Moderado', child: Text('Moderado')),
-                        DropdownMenuItem(value: 'Intenso', child: Text('Intenso')),
-                      ],
-                      onChanged: (v) => setModalState(() => actIntensity = v ?? 'Moderado'),
-                      decoration: const InputDecoration(labelText: 'Intensidade'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(controller: actNotesCtrl, decoration: const InputDecoration(labelText: 'Notas (opcional)')),
-                    const SizedBox(height: 8),
+                    // Recupera planos de treino locais (para musculação)
+                    Builder(builder: (_) {
+                      final plans = <Map<String, dynamic>>[];
+                      for (var k in workoutPlansBox.keys) {
+                        final raw = workoutPlansBox.get(k);
+                        if (raw is Map) {
+                          final m = Map<String, dynamic>.from(raw);
+                          m['_key'] = k;
+                          plans.add(m);
+                        }
+                      }
+                      plans.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+                      final isMusc = actSelectedName.toLowerCase().contains('muscula');
 
-                    // Data e hora
-                    OutlinedButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(context: context, initialDate: actDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
-                        if (picked != null) setModalState(() => actDate = DateTime(picked.year, picked.month, picked.day, actDate.hour, actDate.minute));
-                      },
-                      icon: const Icon(Icons.calendar_today),
-                      label: Text('Data: ${formatDate(actDate)}'),
-                    ),
-                    const SizedBox(height: 12),
+                      // Duração ou distância
+                      Widget measureField;
+                      if (actSelectedUnit == 'min') {
+                        measureField = TextField(
+                          controller: actDurationCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Duração (minutos)'),
+                        );
+                      } else {
+                        measureField = TextField(
+                          controller: actDistanceCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Distância (km)'),
+                        );
+                      }
 
-                    Row(children: [
-                      Expanded(child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar'))),
-                      const SizedBox(width: 12),
-                      Expanded(child: ElevatedButton(
-                        onPressed: () {
-                          final name = actSelectedName.trim();
-                          if (name.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione uma atividade')));
-                            return;
-                          }
-                          final duration = double.tryParse(actDurationCtrl.text.replaceAll(',', '.')) ?? 0.0;
-                          final distance = double.tryParse(actDistanceCtrl.text.replaceAll(',', '.')) ?? 0.0;
-                          final calories = double.tryParse(actCaloriesCtrl.text.replaceAll(',', '.')) ?? 0.0;
-                          final logKey = DateTime.now().millisecondsSinceEpoch.toString();
-                          logsBox.put(logKey, {
-                            'activityKey': actSelectedKey,
-                            'activityName': name,
-                            'unit': actSelectedUnit,
-                            'durationMinutes': actSelectedUnit == 'min' ? duration : null,
-                            'distanceKm': actSelectedUnit == 'km' ? distance : null,
-                            'calories': calories > 0 ? calories : null,
-                            'intensity': actIntensity,
-                            'notes': actNotesCtrl.text.trim(),
-                            'timestamp': actDate.toIso8601String(),
-                            'createdAt': DateTime.now().toIso8601String(),
-                          });
-                          String sub = '';
-                          if (actSelectedUnit == 'min' && duration > 0) sub = '${duration.toStringAsFixed(0)} min • $actIntensity';
-                          if (actSelectedUnit == 'km' && distance > 0) sub = '${distance.toStringAsFixed(2)} km • $actIntensity';
-                          if (calories > 0) sub += ' • ${calories.toStringAsFixed(0)} kcal';
-                          box.put('activity_$logKey', {
-                            'title': '$name${sub.isNotEmpty ? ' — $sub' : ''}',
-                            'module': 'Atividade Física',
-                            'timestamp': actDate.toIso8601String(),
-                            'isDone': false,
-                            'activityLogKey': logKey,
-                            'activityName': name,
-                            'unit': actSelectedUnit,
-                            'durationMinutes': actSelectedUnit == 'min' ? duration : null,
-                            'distanceKm': actSelectedUnit == 'km' ? distance : null,
-                            'calories': calories > 0 ? calories : null,
-                            'intensity': actIntensity,
-                            'notes': actNotesCtrl.text.trim(),
-                          });
-                          Navigator.of(context).pop();
-                          if (mounted) setState(() {});
-                        },
-                        child: const Text('Salvar'),
-                      )),
-                    ]),
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          measureField,
+                          const SizedBox(height: 8),
+
+                          // Se for musculação, mostrar seção Treino (Gerenciar treinos + dropdown de planos)
+                          if (isMusc) ...[
+                            const SizedBox(height: 6),
+                            const Divider(),
+                            Row(children: [
+                              const Icon(Icons.sports_gymnastics, size: 18, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              const Text('Treino', style: TextStyle(fontWeight: FontWeight.w600)),
+                              const Spacer(),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const WorkoutPlanScreen()));
+                                  // Recarrega planos após retorno
+                                  setModalState(() {});
+                                },
+                                icon: const Icon(Icons.edit_note, size: 16),
+                                label: const Text('Gerenciar treinos'),
+                              ),
+                            ]),
+                            if (plans.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(children: [
+                                  const Icon(Icons.info_outline, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'Nenhum treino cadastrado.',
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                    ),
+                                  ),
+                                ]),
+                              )
+                            else
+                              DropdownButtonFormField<String?>(
+                                value: selectedWorkoutPlanKey,
+                                items: [
+                                  const DropdownMenuItem(value: null, child: Text('Sem treino específico')),
+                                  ...plans.map((p) => DropdownMenuItem(value: p['_key'] as String, child: Text(p['name'] as String))),
+                                ],
+                                onChanged: (v) => setModalState(() {
+                                  selectedWorkoutPlanKey = v;
+                                  selectedWorkoutPlanName = v != null ? plans.firstWhere((p) => p['_key'] == v)['name'] as String? : null;
+                                }),
+                                decoration: const InputDecoration(labelText: 'Selecionar treino'),
+                              ),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                          ] else ...[
+                            // Campos comuns para atividades que não são musculação
+                            TextField(
+                              controller: actCaloriesCtrl,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'Calorias (opcional)'),
+                            ),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<String>(
+                              value: actIntensity,
+                              items: const [
+                                DropdownMenuItem(value: 'Leve', child: Text('Leve')),
+                                DropdownMenuItem(value: 'Moderado', child: Text('Moderado')),
+                                DropdownMenuItem(value: 'Intenso', child: Text('Intenso')),
+                              ],
+                              onChanged: (v) => setModalState(() => actIntensity = v ?? 'Moderado'),
+                              decoration: const InputDecoration(labelText: 'Intensidade'),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(controller: actNotesCtrl, decoration: const InputDecoration(labelText: 'Notas (opcional)')),
+                            const SizedBox(height: 8),
+                          ],
+
+                          // Data + Hora (adicionado hora)
+                          Row(children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  final picked = await showDatePicker(context: context, initialDate: actDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
+                                  if (picked != null) setModalState(() => actDate = DateTime(picked.year, picked.month, picked.day, actTime.hour, actTime.minute));
+                                },
+                                icon: const Icon(Icons.calendar_today),
+                                label: Text('Data: ${formatDate(actDate)}'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  final picked = await showTimePicker(context: context, initialTime: actTime, builder: (ctx, child) => MediaQuery(data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: true), child: child!));
+                                  if (picked != null) setModalState(() {
+                                    actTime = picked;
+                                    actDate = DateTime(actDate.year, actDate.month, actDate.day, picked.hour, picked.minute);
+                                  });
+                                },
+                                icon: const Icon(Icons.access_time),
+                                label: Text('${actTime.hour.toString().padLeft(2, '0')}:${actTime.minute.toString().padLeft(2, '0')}'),
+                              ),
+                            ),
+                          ]),
+                          const SizedBox(height: 12),
+
+                          // Marcar como realizado (adicionado)
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Marcar como realizado'),
+                            subtitle: Text(actIsDone ? 'Sessão concluída ✓' : 'Ainda não realizada'),
+                            value: actIsDone,
+                            secondary: Icon(actIsDone ? Icons.check_circle : Icons.radio_button_unchecked, color: actIsDone ? Colors.green : Colors.grey),
+                            onChanged: (v) => setModalState(() => actIsDone = v),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Botões Salvar/Cancelar
+                          Row(children: [
+                            Expanded(child: OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar'))),
+                            const SizedBox(width: 12),
+                            Expanded(child: ElevatedButton(
+                              onPressed: () {
+                                final name = actSelectedName.trim();
+                                if (name.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione uma atividade')));
+                                  return;
+                                }
+                                final duration = double.tryParse(actDurationCtrl.text.replaceAll(',', '.')) ?? 0.0;
+                                final distance = double.tryParse(actDistanceCtrl.text.replaceAll(',', '.')) ?? 0.0;
+                                final calories = double.tryParse(actCaloriesCtrl.text.replaceAll(',', '.')) ?? 0.0;
+                                final logKey = DateTime.now().millisecondsSinceEpoch.toString();
+
+                                // combina data + hora escolhidos
+                                final finalDateTime = DateTime(actDate.year, actDate.month, actDate.day, actTime.hour, actTime.minute);
+
+                                // salva no logsBox
+                                logsBox.put(logKey, {
+                                  'activityKey': actSelectedKey,
+                                  'activityName': name,
+                                  'unit': actSelectedUnit,
+                                  'durationMinutes': actSelectedUnit == 'min' ? duration : null,
+                                  'distanceKm': actSelectedUnit == 'km' ? distance : null,
+                                  'calories': calories > 0 ? calories : null,
+                                  'intensity': actIntensity,
+                                  'notes': actNotesCtrl.text.trim(),
+                                  'timestamp': finalDateTime.toIso8601String(),
+                                  'createdAt': DateTime.now().toIso8601String(),
+                                  'workoutPlanKey': selectedWorkoutPlanKey,
+                                  'workoutPlanName': selectedWorkoutPlanName,
+                                  'isDone': actIsDone,
+                                });
+
+                                String sub = '';
+                                if (actSelectedUnit == 'min' && duration > 0) sub = '${duration.toStringAsFixed(0)} min • $actIntensity';
+                                if (actSelectedUnit == 'km' && distance > 0) sub = '${distance.toStringAsFixed(2)} km • $actIntensity';
+                                if (calories > 0) sub += ' • ${calories.toStringAsFixed(0)} kcal';
+                                // para musculação, prioriza nome do treino como subtítulo
+                                if (actSelectedName.toLowerCase().contains('muscula')) {
+                                  if (selectedWorkoutPlanName != null && selectedWorkoutPlanName!.isNotEmpty) {
+                                    sub = selectedWorkoutPlanName!;
+                                    if (duration > 0) sub += ' — ${duration.toStringAsFixed(0)} min';
+                                    if (calories > 0) sub += ' • ${calories.toStringAsFixed(0)} kcal';
+                                  } else {
+                                    if (duration > 0) sub = '${duration.toStringAsFixed(0)} min';
+                                    if (calories > 0) sub += ' • ${calories.toStringAsFixed(0)} kcal';
+                                  }
+                                }
+
+                                box.put('activity_$logKey', {
+                                  'title': '$name${sub.isNotEmpty ? ' — $sub' : ''}',
+                                  'module': 'Atividade Física',
+                                  'timestamp': finalDateTime.toIso8601String(),
+                                  'isDone': actIsDone,
+                                  'activityLogKey': logKey,
+                                  'activityName': name,
+                                  'unit': actSelectedUnit,
+                                  'durationMinutes': actSelectedUnit == 'min' ? duration : null,
+                                  'distanceKm': actSelectedUnit == 'km' ? distance : null,
+                                  'calories': calories > 0 ? calories : null,
+                                  'intensity': actIntensity,
+                                  'notes': actNotesCtrl.text.trim(),
+                                  'workoutPlanKey': selectedWorkoutPlanKey,
+                                  'workoutPlanName': selectedWorkoutPlanName,
+                                });
+                                Navigator.of(context).pop();
+                                if (mounted) setState(() {});
+                              },
+                              child: const Text('Salvar'),
+                            )),
+                          ]),
+                          const SizedBox(height: 12),
+                        ],
+                      );
+                    }),
                     const SizedBox(height: 12),
                   ] else if (isFood) ...[
                     // ALIMENTAÇÃO

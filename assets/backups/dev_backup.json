@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exportedAt": "2026-06-30T21:42:10.294",
+  "exportedAt": "2026-07-02T18:44:40.520",
   "boxes": {
     "alfred_box": [
       {
@@ -2483,6 +2483,796 @@
         }
       },
       {
+        "key": 148,
+        "value": {
+          "title": "Intermarche",
+          "module": "Finanças",
+          "timestamp": "2026-06-30T12:10:00.000",
+          "isDone": false,
+          "amount": 30.06,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 149,
+        "value": {
+          "title": "Hortfruit",
+          "module": "Finanças",
+          "timestamp": "2026-06-30T12:00:00.000",
+          "isDone": false,
+          "amount": 24.02,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 150,
+        "value": {
+          "title": "Pacheco",
+          "module": "Finanças",
+          "timestamp": "2026-06-30T10:24:00.000",
+          "isDone": false,
+          "amount": 64.99,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 151,
+        "value": {
+          "title": "Padaria",
+          "module": "Finanças",
+          "timestamp": "2026-06-30T10:15:00.000",
+          "isDone": false,
+          "amount": 11.99,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 152,
+        "value": {
+          "title": "Ortalis",
+          "module": "Finanças",
+          "timestamp": "2026-06-30T10:10:00.000",
+          "isDone": false,
+          "amount": 55.71,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 153,
+        "value": {
+          "title": "Uber",
+          "module": "Finanças",
+          "timestamp": "2026-07-29T18:45:00.000",
+          "isDone": false,
+          "amount": 26.37,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 154,
+        "value": {
+          "title": "99 food",
+          "module": "Finanças",
+          "timestamp": "2026-06-29T14:25:00.000",
+          "isDone": false,
+          "amount": 96.01,
+          "category": "Delivery",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 155,
+        "value": {
+          "title": "Uber",
+          "module": "Finanças",
+          "timestamp": "2026-06-29T09:25:00.000",
+          "isDone": false,
+          "amount": 30.93,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 156,
+        "value": {
+          "title": "cafe",
+          "module": "Finanças",
+          "timestamp": "2026-06-29T02:40:00.000",
+          "isDone": false,
+          "amount": 30,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 157,
+        "value": {
+          "title": "Petrobras - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-28T22:10:00.000",
+          "isDone": false,
+          "amount": 103.35,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 158,
+        "value": {
+          "title": "Ponto Churrasco - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-28T21:50:00.000",
+          "isDone": false,
+          "amount": 122.1,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 159,
+        "value": {
+          "title": "Mauro Churrasco - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-27T13:25:00.000",
+          "isDone": false,
+          "amount": 133.74,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 160,
+        "value": {
+          "title": "barbearia - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-27T12:45:00.000",
+          "isDone": false,
+          "amount": 30,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 161,
+        "value": {
+          "title": "Pier - DAY",
+          "module": "Finanças",
+          "timestamp": "2026-06-28T11:20:00.000",
+          "isDone": false,
+          "amount": 133.97,
+          "category": "Outros",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 162,
+        "value": {
+          "title": "Salário EB",
+          "module": "Finanças",
+          "timestamp": "2026-07-01T07:06:00.000",
+          "isDone": false,
+          "amount": 14812.36,
+          "category": "Receita",
+          "paymentMethod": "Transferência",
+          "isIncome": true,
+          "cardName": null
+        }
+      },
+      {
+        "key": 163,
+        "value": {
+          "title": "Espetinho - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-26T22:55:00.000",
+          "isDone": false,
+          "amount": 40,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 164,
+        "value": {
+          "title": "mercado - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-26T19:20:00.000",
+          "isDone": false,
+          "amount": 8.49,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 165,
+        "value": {
+          "title": "Primo - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-26T16:35:00.000",
+          "isDone": false,
+          "amount": 239,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 166,
+        "value": {
+          "title": "uber - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-26T16:30:00.000",
+          "isDone": false,
+          "amount": 33.54,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 167,
+        "value": {
+          "title": "Smiles - Palmas - TO (1/3)",
+          "module": "Finanças",
+          "timestamp": "2026-06-26T12:36:00.000",
+          "isDone": false,
+          "amount": 92,
+          "category": "Transporte",
+          "installmentTotal": 3,
+          "installmentNumber": 1,
+          "installmentGroupId": "1782941844917",
+          "originalAmount": 276,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 168,
+        "value": {
+          "title": "Smiles - Palmas - TO (2/3)",
+          "module": "Finanças",
+          "timestamp": "2026-07-26T12:36:00.000",
+          "isDone": false,
+          "amount": 92,
+          "category": "Transporte",
+          "installmentTotal": 3,
+          "installmentNumber": 2,
+          "installmentGroupId": "1782941844917",
+          "originalAmount": 276,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 169,
+        "value": {
+          "title": "Smiles - Palmas - TO (3/3)",
+          "module": "Finanças",
+          "timestamp": "2026-08-26T12:36:00.000",
+          "isDone": false,
+          "amount": 92,
+          "category": "Transporte",
+          "installmentTotal": 3,
+          "installmentNumber": 3,
+          "installmentGroupId": "1782941844917",
+          "originalAmount": 276,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 170,
+        "value": {
+          "title": "uber - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T22:45:00.000",
+          "isDone": false,
+          "amount": 3.15,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 171,
+        "value": {
+          "title": "Maria - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T22:45:00.000",
+          "isDone": false,
+          "amount": 289.17,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 172,
+        "value": {
+          "title": "uber - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T20:30:00.000",
+          "isDone": false,
+          "amount": 12.94,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 173,
+        "value": {
+          "title": "Uber - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T18:15:00.000",
+          "isDone": false,
+          "amount": 9.96,
+          "category": "Transporte",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 174,
+        "value": {
+          "title": "Krepioca - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T17:15:00.000",
+          "isDone": false,
+          "amount": 76,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 175,
+        "value": {
+          "title": "Studio Z - DAY",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T17:05:00.000",
+          "isDone": false,
+          "amount": 99.99,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 176,
+        "value": {
+          "title": "Farmacia - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T14:50:00.000",
+          "isDone": false,
+          "amount": 114.99,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 177,
+        "value": {
+          "title": "Ifood - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T12:45:00.000",
+          "isDone": false,
+          "amount": 91.88,
+          "category": "Delivery",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 178,
+        "value": {
+          "title": "Supermercado - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T11:35:00.000",
+          "isDone": false,
+          "amount": 134.91,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 179,
+        "value": {
+          "title": "mercado - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T10:15:00.000",
+          "isDone": false,
+          "amount": 18.98,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 180,
+        "value": {
+          "title": "Smiles",
+          "module": "Finanças",
+          "timestamp": "2026-06-25T08:05:00.000",
+          "isDone": false,
+          "amount": 65.6,
+          "category": "Assinaturas",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 181,
+        "value": {
+          "title": "Anabia - Palmas - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-24T16:30:00.000",
+          "isDone": false,
+          "amount": 120,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 182,
+        "value": {
+          "title": "Lagoa Japones - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-24T12:45:00.000",
+          "isDone": false,
+          "amount": 35,
+          "category": "Lazer",
+          "installmentTotal": 1,
+          "installmentNumber": null,
+          "installmentGroupId": null,
+          "originalAmount": 35,
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 183,
+        "value": {
+          "title": "Correntão - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-24T10:00:00.000",
+          "isDone": false,
+          "amount": 85,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 184,
+        "value": {
+          "title": "Lagoa Japones - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-24T12:45:00.000",
+          "isDone": false,
+          "amount": 23,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 185,
+        "value": {
+          "title": "Lanche - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-23T12:50:00.000",
+          "isDone": false,
+          "amount": 7,
+          "category": "Alimentação",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 186,
+        "value": {
+          "title": "Prudential 1",
+          "module": "Finanças",
+          "timestamp": "2026-06-23T10:25:00.000",
+          "isDone": false,
+          "amount": 311.38,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 187,
+        "value": {
+          "title": "Prudential 2",
+          "module": "Finanças",
+          "timestamp": "2026-06-23T08:55:00.000",
+          "isDone": false,
+          "amount": 383.95,
+          "category": "Saúde",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 188,
+        "value": {
+          "title": "Aluguel",
+          "module": "Finanças",
+          "timestamp": "2026-07-02T13:45:00.000",
+          "isDone": false,
+          "amount": 1620.35,
+          "category": "Casa",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false,
+          "cardName": null
+        }
+      },
+      {
+        "key": 189,
+        "value": {
+          "title": "Gás",
+          "module": "Finanças",
+          "timestamp": "2026-07-01T19:35:00.000",
+          "isDone": false,
+          "amount": 68.15,
+          "category": "Casa",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false,
+          "cardName": null
+        }
+      },
+      {
+        "key": 190,
+        "value": {
+          "title": "Dívida Nubank",
+          "module": "Finanças",
+          "timestamp": "2026-07-01T17:45:00.000",
+          "isDone": false,
+          "amount": 67.82,
+          "category": "Outros",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false,
+          "cardName": null
+        }
+      },
+      {
+        "key": 191,
+        "value": {
+          "title": "Parcela Dívida Nubank",
+          "module": "Finanças",
+          "timestamp": "2026-07-01T18:37:00.000",
+          "isDone": false,
+          "amount": 581.68,
+          "category": "Outros",
+          "paymentMethod": "Dinheiro/Pix",
+          "isIncome": false,
+          "cardName": null
+        }
+      },
+      {
+        "key": 192,
+        "value": {
+          "title": "Fervedouro Jatoba - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-22T19:35:00.000",
+          "isDone": false,
+          "amount": 8,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 193,
+        "value": {
+          "title": "Simeone Vieira - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-22T13:00:00.000",
+          "isDone": false,
+          "amount": 12,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 194,
+        "value": {
+          "title": "Artesanatos - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-22T13:05:00.000",
+          "isDone": false,
+          "amount": 70,
+          "category": "Compras",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 195,
+        "value": {
+          "title": "Simeone Vieira - Jalapão - TO",
+          "module": "Finanças",
+          "timestamp": "2026-06-22T12:15:00.000",
+          "isDone": false,
+          "amount": 15,
+          "category": "Lazer",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
+        "key": 196,
+        "value": {
+          "title": "PetLove - DAY",
+          "module": "Finanças",
+          "timestamp": "2026-06-22T10:35:00.000",
+          "isDone": false,
+          "amount": 429.54,
+          "category": "Pets",
+          "paymentMethod": "Crédito",
+          "isIncome": false,
+          "cardId": "1781476529523",
+          "cardName": "Nubank Credito",
+          "cardType": "Crédito"
+        }
+      },
+      {
         "key": "1781619365000",
         "value": {
           "title": "estudei 30 min de Curso Java Spring Boot",
@@ -3190,6 +3980,44 @@
         }
       },
       {
+        "key": "activity_1782941920026",
+        "value": {
+          "title": "Musculação — Treino A - Peito e Tríceps — 60 min",
+          "module": "Atividade Física",
+          "timestamp": "2026-07-01T20:40:00.000",
+          "isDone": false,
+          "activityLogKey": "1782941920026",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "workoutPlanKey": "1781561750784",
+          "workoutPlanName": "Treino A - Peito e Tríceps"
+        }
+      },
+      {
+        "key": "activity_1783027995157",
+        "value": {
+          "title": "Musculação — Treino B - Costas e Bíceps — 60 min",
+          "module": "Atividade Física",
+          "timestamp": "2026-07-02T20:40:00.000",
+          "isDone": false,
+          "activityLogKey": "1783027995157",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "workoutPlanKey": "1781635337735",
+          "workoutPlanName": "Treino B - Costas e Bíceps"
+        }
+      },
+      {
         "key": "tasks",
         "value": [
           {
@@ -3435,6 +4263,42 @@
           "workoutPlanName": "Treino B - Costas e Bíceps",
           "isDone": false
         }
+      },
+      {
+        "key": "1782941920026",
+        "value": {
+          "activityKey": "1781476574077-musculacao",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-07-01T20:40:00.000",
+          "createdAt": "2026-07-01T18:38:40.027",
+          "workoutPlanKey": "1781561750784",
+          "workoutPlanName": "Treino A - Peito e Tríceps",
+          "isDone": false
+        }
+      },
+      {
+        "key": "1783027995157",
+        "value": {
+          "activityKey": "1781476574077-musculacao",
+          "activityName": "Musculação",
+          "unit": "min",
+          "durationMinutes": 60,
+          "distanceKm": null,
+          "calories": null,
+          "intensity": "Moderado",
+          "notes": "",
+          "timestamp": "2026-07-02T20:40:00.000",
+          "createdAt": "2026-07-02T18:33:15.157",
+          "workoutPlanKey": "1781635337735",
+          "workoutPlanName": "Treino B - Costas e Bíceps",
+          "isDone": false
+        }
       }
     ],
     "alfred_detect_rules": [
@@ -3493,7 +4357,8 @@
           "reais",
           "paguei",
           "pagar",
-          "comprei"
+          "comprei",
+          "recebi"
         ]
       }
     ]
