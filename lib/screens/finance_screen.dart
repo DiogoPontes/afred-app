@@ -1,4 +1,4 @@
-// finance_screen.dart
+// lib/screens/finance_screen.dart
 
 import 'dart:collection';
 
@@ -6,12 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../widgets/finance_charts.dart';
+import 'investments_screen.dart';
+import '../widgets/finance_record_form.dart';
+import 'finance_events_screen.dart';
 
 enum PeriodPreset { today, week, month, custom }
 enum AdvancedPeriod { none, monthNamed, bimestre, trimestre, semestre, year }
 
 class FinanceScreen extends StatefulWidget {
-  const FinanceScreen({Key? key}) : super(key: key);
+  final bool openAddForm;
+  final String? initialDescription;
+  final String? eventId;
+  final String? eventName;
+
+  const FinanceScreen({
+    Key? key,
+    this.openAddForm = false,
+    this.initialDescription,
+    this.eventId,
+    this.eventName,
+  }) : super(key: key);
 
   @override
   State<FinanceScreen> createState() => _FinanceScreenState();
@@ -24,7 +38,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   PeriodPreset _period = PeriodPreset.today;
   DateTimeRange? _customRange;
   String? _selectedCategory;
-  String? _selectedCardType; // agora guarda NOME do cartão filtrado
+  String? _selectedCardType; // guarda NOME do cartão filtrado
   String _search = '';
 
   AdvancedPeriod _advanced = AdvancedPeriod.none;
@@ -42,21 +56,61 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   bool _filtersExpanded = true;
   bool _summaryExpanded = true;
+  bool _openedInitialAddForm = false;
 
   @override
   void initState() {
     super.initState();
+
     categoriesBox = Hive.box('alfred_finance_categories');
+
     if (categoriesBox.isEmpty) {
-      final defaults = ['Alimentação', 'Transporte', 'Casa', 'Lazer', 'Saúde', 'Outros'];
-      for (var c in defaults) categoriesBox.add(c);
+      final defaults = [
+        'Alimentação',
+        'Transporte',
+        'Casa',
+        'Lazer',
+        'Saúde',
+        'Outros',
+      ];
+
+      for (var c in defaults) {
+        categoriesBox.add(c);
+      }
     }
 
-    _selectedPeriodOption = _labelForPeriod();
-    _dropdownValue = 'Hoje';
+    final now = DateTime.now();
+
+    if (widget.eventId != null) {
+      // Ao abrir um evento, inicia o filtro no ano atual.
+      _period = PeriodPreset.custom;
+      _advanced = AdvancedPeriod.year;
+      _advYear = now.year;
+      _customRange = _rangeForAdvanced();
+
+      _dropdownValue = 'Ano';
+      _selectedPeriodOption = _labelForPeriod();
+    } else {
+      // A tela geral de Finanças continua iniciando em Hoje.
+      _selectedPeriodOption = _labelForPeriod();
+      _dropdownValue = 'Hoje';
+    }
+
+    if (widget.openAddForm) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _openedInitialAddForm) return;
+
+        _openedInitialAddForm = true;
+
+        _showAddOrEditExpense(
+          context,
+          initialDescription: widget.initialDescription,
+        );
+      });
+    }
   }
 
-  // ---------- Date helpers ----------
+  // ---- Date helpers ----
   DateTime _startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
   DateTime _endOfDay(DateTime d) => DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
 
@@ -73,6 +127,32 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final lastDay = DateTime(year, month + 1, 0).day;
     final day = base.day <= lastDay ? base.day : lastDay;
     return DateTime(year, month, day, base.hour, base.minute, base.second, base.millisecond, base.microsecond);
+  }
+
+  // Retorna a data de vencimento para uma parcela: parcela 0 = data original; parcelas seguintes em cartão de crédito vão para o dia de virada do cartão (closingDay).
+  DateTime _installmentDueDate(DateTime base, int monthsToAdd, String? paymentMethod, String? cardKey) {
+    try {
+      final target = _addMonthsClamped(base, monthsToAdd);
+      if (paymentMethod == 'Crédito' && cardKey != null) {
+        final cardData = _cardsBox.get(cardKey);
+        if (cardData is Map && cardData['closingDay'] != null) {
+          final closingDay = (cardData['closingDay'] is int)
+              ? (cardData['closingDay'] as int)
+              : int.tryParse(cardData['closingDay']?.toString() ?? '') ?? base.day;
+          if (monthsToAdd == 0) {
+            // primeira parcela mantém a data escolhida
+            return DateTime(base.year, base.month, base.day, base.hour, base.minute, base.second, base.millisecond, base.microsecond);
+          } else {
+            final lastDay = DateTime(target.year, target.month + 1, 0).day;
+            final day = closingDay <= lastDay ? closingDay : lastDay;
+            return DateTime(target.year, target.month, day, base.hour, base.minute, base.second, base.millisecond, base.microsecond);
+          }
+        }
+      }
+      return target;
+    } catch (_) {
+      return _addMonthsClamped(base, monthsToAdd);
+    }
   }
 
   DateTimeRange _rangeForPreset(PeriodPreset p) {
@@ -131,7 +211,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     }
   }
 
-  // ---------- Utilities ----------
+  // ---- Utilities ----
   double _extractAmount(String text) {
     final cleaned = text.replaceAll(RegExp(r'[^0-9,.\s]'), ' ');
     final match = RegExp(r'(\d+([.,]\d{1,2})?)').firstMatch(cleaned);
@@ -145,7 +225,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return c.isEmpty ? '(Sem categoria)' : c;
   }
 
-  // ---------- Atualização: escondendo categoria literal 'Receita' ----------
+  // ---- Available categories, card filters ----
   List<String> _availableCategories() {
     final Set<String> s = {};
     for (var raw in box.values) {
@@ -154,8 +234,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         if ((item['module'] ?? '') != 'Finanças') continue;
 
         final cat = _normalizeCategory(item['category']);
-        // Oculta a categoria literal "Receita" da lista de chips,
-        // pois já temos o botão fixo "Receitas" no início
         if (cat != 'Receita') {
           s.add(cat);
         }
@@ -164,20 +242,16 @@ class _FinanceScreenState extends State<FinanceScreen> {
     for (var c in categoriesBox.values) {
       if (c is String) {
         final t = c.trim();
-        // Evita adicionar "Receita" a partir das sugestões da box também
         if (t.isNotEmpty && t != 'Receita') s.add(t);
       }
     }
     s.add('(Sem categoria)');
     final list = s.toList()..sort();
-    // Botões fixos de ação rápida no início
     return ['(Todas)', 'Receitas', 'Despesas'] + list;
   }
 
-  // ---------- NOVO: lista de filtros baseada no NOME/DESCRIÇÃO do cartão ----------
   List<String> _availableCardFilters() {
     final types = <String>{'(Todos)', 'Sem cartão'};
-    // pegar nomes a partir dos lançamentos
     for (var raw in box.values) {
       try {
         final item = Map<String, dynamic>.from(raw as Map);
@@ -190,7 +264,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         }
       } catch (_) {}
     }
-    // também incluir cartões cadastrados na box 'cards'
     for (var k in _cardsBox.keys) {
       try {
         final raw = _cardsBox.get(k);
@@ -211,38 +284,105 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return list;
   }
 
-  List<Map<String, dynamic>> _filteredFinanceItems() {
+  // ---- FILTRO: retorna items + total (considera diferidos e grupos) ----
+  Map<String, dynamic> _filteredFinanceItemsWithTotal() {
     final range = _rangeForPreset(_period);
     final List<Map<String, dynamic>> items = [];
+    final Map<String, Map<String, dynamic>> groupedCredit = {};
 
+    double runningTotal = 0.0;
+    final Set<String> addedInstallmentGroups = {};
     for (var k in box.keys) {
       try {
         final raw = box.get(k);
         final item = Map<String, dynamic>.from(raw as Map);
         if ((item['module'] ?? '') != 'Finanças') continue;
 
-        final tsValue = item['timestamp'];
-        DateTime? ts;
-        if (tsValue is int) {
-          ts = DateTime.fromMillisecondsSinceEpoch(tsValue);
-        } else if (tsValue is String) {
-          ts = DateTime.tryParse(tsValue);
-        } else if (tsValue is DateTime) {
-          ts = tsValue;
+        if (widget.eventId != null) {
+          final eventIds = item['eventIds'];
+
+          if (eventIds is! List ||
+              !eventIds.any((id) => id.toString() == widget.eventId)) {
+            continue;
+          }
         }
 
-        if (ts == null) continue;
-        if (ts.isBefore(range.start) || ts.isAfter(range.end)) continue;
+       
+
+        DateTime? purchaseTs;
+        final tsValue = item['timestamp'];
+        if (tsValue is int) {
+          purchaseTs = DateTime.fromMillisecondsSinceEpoch(tsValue);
+        } else if (tsValue is String) {
+          purchaseTs = DateTime.tryParse(tsValue);
+        } else if (tsValue is DateTime) {
+          purchaseTs = tsValue;
+        }
+        if (purchaseTs == null) continue;
+
+         final today = _startOfDay(DateTime.now());
+
+        // Na tela de evento, não incluir compras futuras nem gerar faturas.
+        if (purchaseTs != null && _startOfDay(purchaseTs).isAfter(today)) {
+          continue;
+        }
+
+        final isCreditCard = (item['paymentMethod'] as String?) == 'Crédito';
+        final cardId = item['cardId'];
+        final cardData = cardId != null ? _cardsBox.get(cardId) : null;
+
+        bool isDeferred = false;
+
+        if (widget.eventId == null &&
+          isCreditCard &&
+          cardData is Map &&
+          cardData['closingDay'] != null) {
+
+          if (isCreditCard && cardData is Map && cardData['closingDay'] != null) {
+            final closingDay = (cardData['closingDay'] is int)
+                ? (cardData['closingDay'] as int)
+                : int.tryParse(cardData['closingDay']?.toString() ?? '') ?? 1;
+
+            if (purchaseTs.day >= closingDay) {
+              isDeferred = true;
+
+              final paymentDate = _calculatePaymentDate(purchaseTs, cardData['closingDay'], cardData['dueDay']);
+
+              if (!(paymentDate.isBefore(range.start) || paymentDate.isAfter(range.end))) {
+                final cardName = (item['cardName'] as String?) ?? (cardData['name'] as String? ?? 'Cartão');
+                final groupKey = '${cardName}_${paymentDate.year}_${paymentDate.month}_${paymentDate.day}';
+                final amount = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
+
+                if (!groupedCredit.containsKey(groupKey)) {
+                  groupedCredit[groupKey] = {
+                    'title': 'Vencimento do cartão $cardName',
+                    'amount': 0.0,
+                    'category': 'Fatura',
+                    'paymentMethod': 'Crédito',
+                    'timestamp': paymentDate.toIso8601String(),
+                    '_ts': paymentDate,
+                    'isIncome': false,
+                    'isGroup': true,
+                    'cardName': cardName,
+                  };
+                }
+                groupedCredit[groupKey]!['amount'] = (groupedCredit[groupKey]!['amount'] as double) + amount;
+              }
+            }
+          }
+        }
+
+        // O registro original aparece SOMENTE se a data da compra estiver no período
+        if (purchaseTs.isBefore(range.start) || purchaseTs.isAfter(range.end)) continue;
 
         final category = _normalizeCategory(item['category']);
         final isIncome = item['isIncome'] == true;
 
+        // Filtros de Categoria/Tipo/Busca
         if (_selectedCategory == 'Receitas' && !isIncome) continue;
         if (_selectedCategory == 'Despesas' && isIncome) continue;
-
         if (_selectedCategory != null && _selectedCategory != '(Todas)' && _selectedCategory != 'Receitas' && _selectedCategory != 'Despesas' && category != _selectedCategory) continue;
 
-        // FILTRO POR NOME DO CARTÃO (cardName)
         final cardName = (item['cardName'] as String?)?.trim();
         if (_selectedCardType != null && _selectedCardType != '(Todos)') {
           if (_selectedCardType == 'Sem cartão') {
@@ -257,43 +397,71 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
         final copy = Map<String, dynamic>.from(item);
         copy['_key'] = k;
-        copy['_ts'] = ts;
+        copy['_ts'] = purchaseTs;
+        copy['_deferred'] = isDeferred;
+        final amountVal = widget.eventId != null &&
+              item['originalAmount'] is num
+          ? (item['originalAmount'] as num).toDouble()
+          : (item['amount'] is num)
+              ? (item['amount'] as num).toDouble()
+              : _extractAmount(item['title'] as String? ?? '');
+
+        if (widget.eventId != null) {
+          final groupId = item['installmentGroupId']?.toString();
+
+          if (groupId != null && groupId.isNotEmpty) {
+            if (!addedInstallmentGroups.add(groupId)) continue;
+          }
+        }        
+        copy['amount'] = amountVal;
+        if (isDeferred) copy['_deferredAmount'] = amountVal;
+
+        runningTotal += (isIncome ? amountVal : -amountVal);
+
         items.add(copy);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Erro ao processar item: $e');
+      }
     }
 
-    items.sort((a, b) {
-      final ta = a['_ts'] as DateTime;
-      final tb = b['_ts'] as DateTime;
-      return tb.compareTo(ta);
-    });
+    // Adiciona os grupos consolidados (Vencimentos) ao período filtrado
+    for (var g in groupedCredit.values) {
+      if (_selectedCardType != null && _selectedCardType != '(Todos)') {
+        final grpCardName = (g['cardName'] as String?)?.trim() ?? '';
+        if (_selectedCardType == 'Sem cartão') continue;
+        if (grpCardName != _selectedCardType) continue;
+      }
+      if (_selectedCategory != null && _selectedCategory != '(Todas)' && _selectedCategory != 'Despesas' && _selectedCategory != 'Receitas') {
+        continue;
+      }
+      if (_selectedCategory == 'Receitas') continue;
 
-    return items;
-  }
+      final grpTitle = (g['title'] as String? ?? '').toLowerCase();
+      if (_search.isNotEmpty && !grpTitle.contains(_search.toLowerCase())) continue;
 
-  double _sumItems(List<Map<String, dynamic>> items) {
-    double total = 0.0;
-    for (var item in items) {
-      final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
-      total += amt;
+      final grp = Map<String, dynamic>.from(g);
+      final grpAmount = (grp['amount'] is num) ? (grp['amount'] as num).toDouble() : 0.0;
+      grp['_key'] = 'group_${grp['cardName']}_${grp['_ts']?.toString() ?? ''}';
+      grp['_deferred'] = false;
+      grp['_isConsolidatedGroup'] = true;
+      items.add(grp);
+
+      runningTotal += -grpAmount;
     }
-    return total;
+
+    items.sort((a, b) => (b['_ts'] as DateTime).compareTo(a['_ts'] as DateTime));
+
+    return {
+      'items': items,
+      'total': runningTotal,
+    };
   }
 
-  Map<String, double> _sumByPaymentMethod(List<Map<String, dynamic>> items) {
-    final Map<String, double> sums = {for (var m in paymentMethods) m: 0.0};
-    for (var item in items) {
-      final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
-      final pm = (item['paymentMethod'] as String?) ?? 'Dinheiro/Pix';
-      if (!sums.containsKey(pm)) sums[pm] = 0.0;
-      sums[pm] = sums[pm]! + amt;
-    }
-    return sums;
-  }
-
+  // ---- Somas do Resumo ----
   double _sumIncomes(List<Map<String, dynamic>> items) {
     double total = 0.0;
     for (var item in items) {
+      if (item['_deferred'] == true) continue;
       final isIncome = item['isIncome'] == true;
       if (!isIncome) continue;
       final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
@@ -305,12 +473,25 @@ class _FinanceScreenState extends State<FinanceScreen> {
   double _sumExpenses(List<Map<String, dynamic>> items) {
     double total = 0.0;
     for (var item in items) {
+      if (item['_deferred'] == true) continue;
       final isIncome = item['isIncome'] == true;
       if (isIncome) continue;
       final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
       total += amt;
     }
     return total;
+  }
+
+  Map<String, double> _sumByPaymentMethod(List<Map<String, dynamic>> items) {
+    final Map<String, double> sums = {for (var m in paymentMethods) m: 0.0};
+    for (var item in items) {
+      if (item['_deferred'] == true) continue;
+      final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(item['title'] as String? ?? '');
+      final pm = (item['paymentMethod'] as String?) ?? 'Dinheiro/Pix';
+      if (!sums.containsKey(pm)) sums[pm] = 0.0;
+      sums[pm] = sums[pm]! + amt;
+    }
+    return sums;
   }
 
   String _generateCsv(List<Map<String, dynamic>> items) {
@@ -350,10 +531,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advanced = AdvancedPeriod.none;
         _selectedPeriodOption = _labelForPeriod();
       });
-    } else {
-      setState(() {
-        _selectedPeriodOption = _labelForPeriod();
-      });
     }
   }
 
@@ -361,22 +538,22 @@ class _FinanceScreenState extends State<FinanceScreen> {
     if (_advanced != AdvancedPeriod.none) {
       switch (_advanced) {
         case AdvancedPeriod.monthNamed:
-          if (_advMonth != null && _advYear != null) return 'Mês: ${_monthName(_advMonth!)} ${_advYear!}';
+          if (_advMonth != null && _advYear != null) return '${_monthName(_advMonth!)} ${_advYear!}';
           return 'Escolher mês';
         case AdvancedPeriod.bimestre:
           if (_advBimesterStart != null && _advYear != null) {
             final endMonth = _addMonthsClamped(DateTime(_advYear!, _advBimesterStart!), 1).month;
-            return 'Bimestre: ${_monthName(_advBimesterStart!)} / ${_monthName(endMonth)} ${_advYear!}';
+            return '${_monthName(_advBimesterStart!)} / ${_monthName(endMonth)} ${_advYear!}';
           }
           return 'Escolher bimestre';
         case AdvancedPeriod.trimestre:
-          if (_advQuarter != null && _advYear != null) return 'Trimestre: T${_advQuarter!} ${_advYear!}';
+          if (_advQuarter != null && _advYear != null) return 'T${_advQuarter!} ${_advYear!}';
           return 'Escolher trimestre';
         case AdvancedPeriod.semestre:
-          if (_advSemester != null && _advYear != null) return 'Semestre: S${_advSemester!} ${_advYear!}';
+          if (_advSemester != null && _advYear != null) return 'S${_advSemester!} ${_advYear!}';
           return 'Escolher semestre';
         case AdvancedPeriod.year:
-          if (_advYear != null) return 'Ano: ${_advYear!}';
+          if (_advYear != null) return '${_advYear!}';
           return 'Escolher ano';
         default:
           return 'Avançado';
@@ -404,41 +581,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} $hh:$mm';
   }
 
-  // ---------- Advanced pickers ----------
-  Future<void> _pickAdvancedOption(AdvancedPeriod sel) async {
-    setState(() {
-      _advanced = sel;
-    });
-
-    switch (sel) {
-      case AdvancedPeriod.monthNamed:
-        await _pickMonthNamed();
-        break;
-      case AdvancedPeriod.bimestre:
-        await _pickBimester();
-        break;
-      case AdvancedPeriod.trimestre:
-        await _pickQuarter();
-        break;
-      case AdvancedPeriod.semestre:
-        await _pickSemester();
-        break;
-      case AdvancedPeriod.year:
-        await _pickYear();
-        break;
-      case AdvancedPeriod.none:
-        setState(() {
-          _customRange = null;
-          _period = PeriodPreset.today;
-        });
-        break;
-    }
-
-    setState(() {
-      _selectedPeriodOption = _labelForPeriod();
-    });
-  }
-
+  // ---- Advanced pickers ----
   Future<void> _pickMonthNamed() async {
     int year = DateTime.now().year;
     int month = DateTime.now().month;
@@ -497,11 +640,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advanced = AdvancedPeriod.monthNamed;
         _selectedPeriodOption = _labelForPeriod();
       });
-    } else {
-      setState(() {
-        _advanced = AdvancedPeriod.none;
-        _selectedPeriodOption = _labelForPeriod();
-      });
     }
   }
 
@@ -519,10 +657,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 spacing: 6,
                 children: [1, 3, 5, 7, 9, 11]
                     .map((m) => ChoiceChip(
-                          label: Text('${_monthName(m)}/${_monthName(_addMonthsClamped(DateTime(0, m, 1), 1).month)}'),
-                          selected: start == m,
-                          onSelected: (_) => setD(() => start = m),
-                        ))
+                  label: Text('${_monthName(m)}/${_monthName(_addMonthsClamped(DateTime(0, m, 1), 1).month)}'),
+                  selected: start == m,
+                  onSelected: (_) => setD(() => start = m),
+                ))
                     .toList(),
               ),
               const SizedBox(height: 12),
@@ -538,7 +676,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             ]);
           }),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
             ElevatedButton(onPressed: () => Navigator.pop(context, {'year': year, 'start': start}), child: const Text('OK')),
           ],
         );
@@ -552,11 +690,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _customRange = _rangeForAdvanced();
         _period = PeriodPreset.custom;
         _advanced = AdvancedPeriod.bimestre;
-        _selectedPeriodOption = _labelForPeriod();
-      });
-    } else {
-      setState(() {
-        _advanced = AdvancedPeriod.none;
         _selectedPeriodOption = _labelForPeriod();
       });
     }
@@ -604,11 +737,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advanced = AdvancedPeriod.trimestre;
         _selectedPeriodOption = _labelForPeriod();
       });
-    } else {
-      setState(() {
-        _advanced = AdvancedPeriod.none;
-        _selectedPeriodOption = _labelForPeriod();
-      });
     }
   }
 
@@ -654,11 +782,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advanced = AdvancedPeriod.semestre;
         _selectedPeriodOption = _labelForPeriod();
       });
-    } else {
-      setState(() {
-        _advanced = AdvancedPeriod.none;
-        _selectedPeriodOption = _labelForPeriod();
-      });
     }
   }
 
@@ -694,15 +817,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
         _advanced = AdvancedPeriod.year;
         _selectedPeriodOption = _labelForPeriod();
       });
-    } else {
-      setState(() {
-        _advanced = AdvancedPeriod.none;
-        _selectedPeriodOption = _labelForPeriod();
-      });
     }
   }
 
-  // ---------- Installment & group helpers ----------
+  // ---- Installment & group helpers ----
   double _installmentAmount(double total, int count, int index) {
     if (count <= 1) return total;
     final base = double.parse((total / count).toStringAsFixed(2));
@@ -713,6 +831,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   List<Map<String, dynamic>> _getGroupItems(String groupId) {
     final List<Map<String, dynamic>> items = [];
+    final Set<String> addedInstallmentGroups = {};
     for (var k in box.keys) {
       try {
         final raw = box.get(k);
@@ -755,25 +874,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
     }
   }
 
-  // Helpers — obtenha a box 'cards' e lista de cartões
+  // Box cards
   Box get _cardsBox => Hive.box('cards');
 
-  List<Map<String, dynamic>> _availableCards() {
-    final out = <Map<String, dynamic>>[];
-    for (var key in _cardsBox.keys) {
-      final raw = _cardsBox.get(key);
-      if (raw is Map) {
-        final m = Map<String, dynamic>.from(raw);
-        m['_key'] = key; // chave Hive (útil para editar/excluir)
-        out.add(m);
-      }
-    }
-    // ordenar por name
-    out.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
-    return out;
-  }
+  List<Map<String, dynamic>> _availableCards() => availableFinanceCards();
 
-  // ---------- Cards UI: gerenciar e adicionar/editar (métodos dentro do estado) ----------
+  // ---- Cards UI ----
   Future<void> _showManageCards() async {
     await showModalBottomSheet(
       context: context,
@@ -867,113 +973,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  // Retorna id do cartão criado/editado (ou null)
-  Future<String?> _showAddOrEditCard(dynamic hiveKey) async {
-    final cardsBox = _cardsBox;
-
-    final nameCtrl = TextEditingController();
-    String type = 'Crédito';
-    int closingDay = 1; // default for crédito
-
-    if (hiveKey != null) {
-      final existing = Map<String, dynamic>.from(cardsBox.get(hiveKey) as Map);
-      nameCtrl.text = (existing['name'] ?? '') as String;
-      type = (existing['type'] ?? 'Crédito') as String;
-      // existing closingDay may be null for Débito
-      closingDay = (existing['closingDay'] is int) ? (existing['closingDay'] as int) : 1;
-    }
-
-    // retornará o id criado/atualizado (ou null se cancelar)
-    return await showModalBottomSheet<String?>(
-      context: context,
-      isScrollControlled: true,
-      builder: (bctx) {
-        return StatefulBuilder(builder: (ctx, setModal) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(bctx).viewInsets.bottom),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      hiveKey == null ? 'Novo cartão' : 'Editar cartão',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nameCtrl,
-                      decoration: const InputDecoration(labelText: 'Nome do cartão'),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: type,
-                      items: const [
-                        DropdownMenuItem(value: 'Crédito', child: Text('Crédito')),
-                        DropdownMenuItem(value: 'Débito', child: Text('Débito')),
-                      ],
-                      onChanged: (v) {
-                        setModal(() {
-                          type = v ?? 'Crédito';
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Tipo'),
-                    ),
-                    const SizedBox(height: 12),
-                    if (type == 'Crédito') ...[
-                      DropdownButtonFormField<int>(
-                        value: closingDay,
-                        items: List.generate(31, (i) => i + 1).map((d) {
-                          return DropdownMenuItem(value: d, child: Text(d.toString()));
-                        }).toList(),
-                        onChanged: (v) {
-                          setModal(() {
-                            closingDay = v ?? 1;
-                          });
-                        },
-                        decoration: const InputDecoration(labelText: 'Dia de virada do ciclo'),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (type == 'Débito') const SizedBox(height: 12),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        child: Text(hiveKey == null ? 'Criar' : 'Salvar'),
-                        onPressed: () {
-                          final nm = nameCtrl.text.trim();
-                          if (nm.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Informe o nome do cartão')),
-                            );
-                            return;
-                          }
-
-                          final id = hiveKey ?? DateTime.now().millisecondsSinceEpoch.toString();
-                          final card = {
-                            'id': id,
-                            'name': nm,
-                            'type': type,
-                            // se for débito não salvamos dia de virada
-                            'closingDay': type == 'Crédito' ? closingDay : null,
-                          };
-
-                          cardsBox.put(id, card);
-                          // fecha o modal retornando o id
-                          Navigator.of(bctx).pop(id);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
-      },
-    );
+  Future<String?> _showAddOrEditCard(dynamic hiveKey) {
+    return showFinanceCardForm(context, hiveKey);
   }
 
   void _showParcelOptions(BuildContext context, dynamic key, Map<String, dynamic> existing) {
@@ -1014,8 +1015,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               title: const Text('Excluir apenas esta parcela'),
               onTap: () {
                 Navigator.pop(ctx);
-                if (key != null) box.delete(key);
-                if (mounted) setState(() {});
+                _deleteSubscriptionSeriesIfNeededAndThen(key, existing);
               },
             ),
             ListTile(
@@ -1048,7 +1048,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  // ---------- Edit series (modificada) ----------
   void _showEditSeries(BuildContext context, String groupId) {
     final groupItems = _getGroupItems(groupId);
     if (groupItems.isEmpty) return;
@@ -1071,7 +1070,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
     String selectedCategory = currentCategory == '(Sem categoria)' ? '(Sem categoria)' : currentCategory;
     String selectedPaymentMethod = currentPaymentMethod;
 
-    // card selection initial state (by key)
     String? selectedCardKey = first['cardId'] as String?;
     String? selectedCardName = first['cardName'] as String?;
     String? selectedCardType = first['cardType'] as String?;
@@ -1095,7 +1093,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
     void _rebuildFilteredCards(StateSetter setModal) {
       if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
         filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
-        // if currently selected card key is not in filtered, clear selection
         if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
           selectedCardKey = null;
           selectedCardName = null;
@@ -1107,10 +1104,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
         selectedCardName = null;
         selectedCardType = null;
       }
-      setModal(() {}); // atualiza modal
+      setModal(() {});
     }
 
-    // inicializa filteredCards
     if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
       filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
     }
@@ -1178,8 +1174,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     decoration: const InputDecoration(labelText: 'Categoria'),
                   ),
                   const SizedBox(height: 8),
-
-                  // --- Método de pagamento (AGORA aqui) ---
                   DropdownButtonFormField<String>(
                     value: selectedPaymentMethod,
                     items: paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
@@ -1188,14 +1182,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       if (selectedPaymentMethod != 'Crédito') {
                         installmentCtrl.text = '1';
                       }
-                      // rebuild filteredCards conforme novo método
                       _rebuildFilteredCards(setModal);
                     }),
                     decoration: const InputDecoration(labelText: 'Método de pagamento'),
                   ),
                   const SizedBox(height: 8),
-
-                  // --- Card dropdown (AGORA: sempre renderiza, mesmo se filteredCards vazio) ---
                   DropdownButtonFormField<String?>(
                     value: selectedCardKey,
                     items: [
@@ -1216,7 +1207,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             selectedCardType = c != null ? (c['type'] as String?) : null;
                           });
                         } else {
-                          setModal(() {}); // força redraw se usuário cancelou
+                          setModal(() {});
                         }
                       } else {
                         setModal(() {
@@ -1225,7 +1216,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             final c = _cardsBox.get(v) as Map;
                             selectedCardName = c['name'] as String?;
                             selectedCardType = c['type'] as String?;
-                            // manter coerência: se cardType difere do método (improvável), sincroniza
                             if (selectedCardType != selectedPaymentMethod && (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito')) {
                               selectedPaymentMethod = selectedCardType ?? selectedPaymentMethod;
                             }
@@ -1239,7 +1229,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     decoration: const InputDecoration(labelText: 'Cartão (opcional)'),
                   ),
                   const SizedBox(height: 8),
-
                   TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total')),
                   const SizedBox(height: 8),
                   if (!isIncome && (selectedPaymentMethod == 'Crédito')) ...[
@@ -1295,7 +1284,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         }
 
                         for (int i = 0; i < count; i++) {
-                          final dueDate = _addMonthsClamped(timestampBase, i);
+                          final dueDate = _installmentDueDate(timestampBase, i, selectedPaymentMethod, selectedCardKey);
                           final installmentAmount = _installmentAmount(totalAmount, count, i);
                           final item = {
                             'title': '$titleBase (${i + 1}/$count)',
@@ -1334,393 +1323,152 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  // ---------- Add / Edit single expense (modificada) ----------
-  void _showAddOrEditExpense(BuildContext context, {dynamic key, Map<String, dynamic>? existing}) {
-    final bool isEditing = key != null;
-    final bool existingIsIncome = existing != null && (existing['isIncome'] == true);
-
-    final titleCtrl = TextEditingController(text: existing != null ? (existing['title'] as String? ?? '') : '');
-    final amountCtrl = TextEditingController(text: existing != null ? ((existing['amount'] is num) ? existing['amount'].toString() : '') : '');
-    final installmentCtrl = TextEditingController(text: existing != null && existing['installmentTotal'] != null ? existing['installmentTotal'].toString() : '1');
-    final DateTime _baseTs = existing != null ? (DateTime.tryParse(existing['timestamp'] as String? ?? '') ?? DateTime.now()) : DateTime.now();
-    DateTime selectedDate = _baseTs;
-    TimeOfDay selectedTime = TimeOfDay(hour: _baseTs.hour, minute: _baseTs.minute);
-    String selectedCategory = existing != null ? _normalizeCategory(existing['category']) : '(Sem categoria)';
-    String selectedPaymentMethod = existing != null ? (existing['paymentMethod'] as String? ?? paymentMethods.first) : paymentMethods.first;
-    bool isIncomeSelected = existingIsIncome;
-
-    // Card selection initial state
-    String? selectedCardKey = existing != null && existing['cardId'] != null ? existing['cardId'] as String? : null;
-    String? selectedCardName = existing != null && existing['cardName'] != null ? existing['cardName'] as String? : null;
-    String? selectedCardType = existing != null && existing['cardType'] != null ? existing['cardType'] as String? : null;
-    if (selectedCardType != null) {
-      // ensure payment method sync if card exists
-      if (selectedCardType == 'Crédito') selectedPaymentMethod = 'Crédito';
-      else if (selectedCardType == 'Débito') selectedPaymentMethod = 'Débito';
-    }
-
-    final LinkedHashSet<String> catSet = LinkedHashSet<String>();
-    catSet.add('(Sem categoria)');
-    for (var c in categoriesBox.values) {
-      if (c is String) {
-        final t = c.trim();
-        if (t.isNotEmpty) catSet.add(t);
-      }
-    }
-    List<String> catOptions = catSet.toList();
-
-    if (!catOptions.contains(selectedCategory)) {
-      selectedCategory = '(Sem categoria)';
-    }
-
-    final cards = _availableCards();
-    List<Map<String, dynamic>> filteredCards = [];
-    void _rebuildFilteredCards(StateSetter setModal) {
-      if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
-        filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
-        if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
-          selectedCardKey = null;
-          selectedCardName = null;
-          selectedCardType = null;
-        }
-      } else {
-        filteredCards = [];
-        selectedCardKey = null;
-        selectedCardName = null;
-        selectedCardType = null;
-      }
-    }
-
-    // initialize filteredCards based on initial payment method
-    if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
-      filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setModal) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, left: 16, right: 16, top: 16),
-            child: SingleChildScrollView(
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 12), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(4))),
-                Text(isEditing ? (existingIsIncome ? 'Editar receita' : 'Editar despesa') : 'Adicionar registro', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-
-                DropdownButtonFormField<String>(
-                  value: isIncomeSelected ? 'Receita' : 'Despesa',
-                  items: const [
-                    DropdownMenuItem(value: 'Despesa', child: Text('Despesa')),
-                    DropdownMenuItem(value: 'Receita', child: Text('Receita')),
-                  ],
-                  onChanged: (v) => setModal(() {
-                    isIncomeSelected = (v == 'Receita');
-                    selectedPaymentMethod = isIncomeSelected ? incomeMethods.first : paymentMethods.first;
-                    if (!isIncomeSelected && selectedCategory == '(Sem categoria)') selectedCategory = '(Sem categoria)';
-                    // if switching to receita, clear card selection
-                    if (isIncomeSelected) {
-                      selectedCardKey = null;
-                      selectedCardName = null;
-                      selectedCardType = null;
-                      filteredCards = [];
-                    }
-                  }),
-                  decoration: const InputDecoration(labelText: 'Tipo'),
-                ),
-
-                const SizedBox(height: 12),
-
-                if (!isIncomeSelected) ...[
-                  TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Descrição')),
-                  const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    value: selectedCategory,
-                    items: [
-                      const DropdownMenuItem(value: '(Sem categoria)', child: Text('(Sem categoria)')),
-                      ...catOptions.where((c) => c != '(Sem categoria)').map((c) => DropdownMenuItem(value: c, child: Text(c))),
-                      const DropdownMenuItem(value: '__add_new__', child: Text('Adicionar nova categoria...')),
-                    ],
-                    onChanged: (v) async {
-                      if (v == null) return;
-                      if (v == '__add_new__') {
-                        final newCat = await _promptNewCategory(ctx);
-                        if (newCat != null && newCat.trim().isNotEmpty) {
-                          final newCatTrim = newCat.trim();
-                          String? storedMatch;
-                          for (var val in categoriesBox.values) {
-                            if (val is String && val.trim().toLowerCase() == newCatTrim.toLowerCase()) {
-                              storedMatch = val.trim();
-                              break;
-                            }
-                          }
-                          if (storedMatch == null) {
-                            categoriesBox.add(newCatTrim);
-                          }
-                          final stored = storedMatch ?? newCatTrim;
-
-                          final LinkedHashSet<String> updatedSet = LinkedHashSet<String>();
-                          updatedSet.add('(Sem categoria)');
-                          for (var c in categoriesBox.values) {
-                            if (c is String) {
-                              final t = c.trim();
-                              if (t.isNotEmpty) updatedSet.add(t);
-                            }
-                          }
-
-                          setModal(() {
-                            catOptions = updatedSet.toList();
-                            selectedCategory = stored;
-                          });
-                        }
-                      } else {
-                        setModal(() {
-                          selectedCategory = v;
-                        });
-                      }
-                    },
-                    decoration: const InputDecoration(labelText: 'Categoria'),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // --- Método de pagamento (AGORA depois da categoria) ---
-                  DropdownButtonFormField<String>(
-                    value: selectedPaymentMethod,
-                    items: (isIncomeSelected ? incomeMethods : paymentMethods).map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                    onChanged: (v) => setModal(() {
-                      selectedPaymentMethod = v ?? (isIncomeSelected ? incomeMethods.first : paymentMethods.first);
-                      if (!isIncomeSelected && selectedPaymentMethod != 'Crédito') {
-                        installmentCtrl.text = '1';
-                      }
-                      // rebuild filteredCards conforme seleção do método
-                      if (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito') {
-                        filteredCards = cards.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
-                        // se o selectedCardKey não existe mais no filtro, limpe
-                        if (selectedCardKey != null && !filteredCards.any((c) => c['_key'] == selectedCardKey)) {
-                          selectedCardKey = null;
-                          selectedCardName = null;
-                          selectedCardType = null;
-                        }
-                      } else {
-                        filteredCards = [];
-                        selectedCardKey = null;
-                        selectedCardName = null;
-                        selectedCardType = null;
-                      }
-                    }),
-                    decoration: const InputDecoration(labelText: 'Método de pagamento'),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // --- Card dropdown (AGORA: sempre renderiza, inclui opção de adicionar) ---
-                  DropdownButtonFormField<String?>(
-                    value: selectedCardKey,
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('Nenhum cartão')),
-                      const DropdownMenuItem(value: '__add_new__', child: Text('Adicionar novo cartão...')),
-                      ...filteredCards.map((c) => DropdownMenuItem(value: c['_key'] as String, child: Text('${c['name']} (${c['type']})'))),
-                    ],
-                    onChanged: (v) async {
-                      if (v == '__add_new__') {
-                        final newId = await _showAddOrEditCard(null);
-                        final updated = _availableCards();
-                        filteredCards = updated.where((c) => (c['type'] as String?) == selectedPaymentMethod).toList();
-                        if (newId != null) {
-                          final c = _cardsBox.get(newId) as Map?;
-                          setModal(() {
-                            selectedCardKey = newId;
-                            selectedCardName = c != null ? (c['name'] as String?) : null;
-                            selectedCardType = c != null ? (c['type'] as String?) : null;
-                          });
-                        } else {
-                          setModal(() {});
-                        }
-                      } else {
-                        setModal(() {
-                          selectedCardKey = v;
-                          if (v != null) {
-                            final c = _cardsBox.get(v) as Map;
-                            selectedCardName = c['name'] as String?;
-                            selectedCardType = c['type'] as String?;
-                            // garantir coerência entre método e tipo do cartão
-                            if (selectedCardType != selectedPaymentMethod && (selectedPaymentMethod == 'Crédito' || selectedPaymentMethod == 'Débito')) {
-                              selectedPaymentMethod = selectedCardType ?? selectedPaymentMethod;
-                            }
-                          } else {
-                            selectedCardName = null;
-                            selectedCardType = null;
-                          }
-                        });
-                      }
-                    },
-                    decoration: const InputDecoration(labelText: 'Cartão (opcional)'),
-                  ),
-                  const SizedBox(height: 10),
-
-                  TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
-                  const SizedBox(height: 10),
-
-                  if (!isIncomeSelected && (selectedPaymentMethod == 'Crédito')) ...[
-                    TextField(
-                      controller: installmentCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Número de parcelas',
-                        hintText: '1 = sem parcelamento (apenas crédito)',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                ] else ...[
-                  // receita branch
-                  TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Descrição (opcional)')),
-                  const SizedBox(height: 10),
-                  // método de recebimento (para receitas) — mantemos, mas sem cartões
-                  DropdownButtonFormField<String>(
-                    value: selectedPaymentMethod,
-                    items: incomeMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                    onChanged: (v) => setModal(() => selectedPaymentMethod = v ?? incomeMethods.first),
-                    decoration: const InputDecoration(labelText: 'Método de recebimento'),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(controller: amountCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Valor total', hintText: 'Ex: 600.00')),
-                  const SizedBox(height: 10),
-                ],
-
-                Row(children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(context: ctx, initialDate: selectedDate, firstDate: DateTime(2000), lastDate: DateTime(2100));
-                        if (picked != null) {
-                          setModal(() {
-                            selectedDate = DateTime(picked.year, picked.month, picked.day, selectedTime.hour, selectedTime.minute);
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.calendar_month),
-                      label: Text('${selectedDate.day.toString().padLeft(2,'0')}/${selectedDate.month.toString().padLeft(2,'0')}/${selectedDate.year}'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final picked = await showTimePicker(
-                          context: ctx,
-                          initialTime: selectedTime,
-                          builder: (context, child) => MediaQuery(
-                            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                            child: child!,
-                          ),
-                        );
-                        if (picked != null) {
-                          setModal(() {
-                            selectedTime = picked;
-                            selectedDate = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, picked.hour, picked.minute);
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.access_time),
-                      label: Text('${selectedTime.hour.toString().padLeft(2,'0')}:${selectedTime.minute.toString().padLeft(2,'0')}'),
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 12),
-                Row(children: [
-                  Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar'))),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final title = titleCtrl.text.trim().isEmpty ? (isIncomeSelected ? 'Receita' : 'Despesa') : titleCtrl.text.trim();
-                        final totalAmount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? _extractAmount(title);
-                        final installmentCount = int.tryParse(installmentCtrl.text.trim()) ?? 1;
-                        final count = installmentCount < 1 ? 1 : installmentCount;
-                        final categoryValue = isIncomeSelected ? 'Receita' : (selectedCategory == '(Sem categoria)' ? '' : selectedCategory);
-                        final timestampBase = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, selectedTime.hour, selectedTime.minute);
-
-                        if (isEditing) {
-                          final item = {
-                            'title': title,
-                            'module': 'Finanças',
-                            'timestamp': timestampBase.toIso8601String(),
-                            'isDone': false,
-                            'amount': totalAmount,
-                            'category': categoryValue,
-                            'installmentTotal': count,
-                            'installmentNumber': existing?['installmentNumber'],
-                            'installmentGroupId': existing?['installmentGroupId'],
-                            'originalAmount': existing?['originalAmount'] ?? totalAmount,
-                            'paymentMethod': selectedPaymentMethod,
-                            'isIncome': isIncomeSelected,
-                            'cardId': selectedCardKey,
-                            'cardName': selectedCardName,
-                            'cardType': selectedCardType,
-                          };
-                          box.put(key, item);
-                        } else {
-                          if (count <= 1) {
-                            final item = {
-                              'title': title,
-                              'module': 'Finanças',
-                              'timestamp': timestampBase.toIso8601String(),
-                              'isDone': false,
-                              'amount': totalAmount,
-                              'category': categoryValue,
-                              'paymentMethod': selectedPaymentMethod,
-                              'isIncome': isIncomeSelected,
-                              'cardId': selectedCardKey,
-                              'cardName': selectedCardName,
-                              'cardType': selectedCardType,
-                            };
-                            box.add(item);
-                          } else {
-                            final groupId = DateTime.now().millisecondsSinceEpoch.toString();
-                            for (int i = 0; i < count; i++) {
-                              final dueDate = _addMonthsClamped(timestampBase, i);
-                              final installmentAmount = _installmentAmount(totalAmount, count, i);
-                              final item = {
-                                'title': '$title (${i + 1}/$count)',
-                                'module': 'Finanças',
-                                'timestamp': dueDate.toIso8601String(),
-                                'isDone': false,
-                                'amount': installmentAmount,
-                                'category': categoryValue,
-                                'installmentTotal': count,
-                                'installmentNumber': i + 1,
-                                'installmentGroupId': groupId,
-                                'originalAmount': totalAmount,
-                                'paymentMethod': selectedPaymentMethod,
-                                'isIncome': isIncomeSelected,
-                                'cardId': selectedCardKey,
-                                'cardName': selectedCardName,
-                                'cardType': selectedCardType,
-                              };
-                              box.add(item);
-                            }
-                          }
-                        }
-
-                        Navigator.pop(ctx);
-                        if (mounted) setState(() {});
-                      },
-                      child: Text(isEditing ? 'Salvar' : 'Criar'),
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 18),
-              ]),
-            ),
-          );
-        });
+  // ---- Add / Edit single expense ----
+  void _showAddOrEditExpense(
+    BuildContext context, {
+    dynamic key,
+    Map<String, dynamic>? existing,
+    String? initialDescription,
+    List<String>? initialEventIds,
+  }) {
+    showFinanceRecordForm(
+      context,
+      key: key,
+      existing: existing,
+      initialDescription: initialDescription,
+      initialEventIds: existing == null && widget.eventId != null
+          ? [widget.eventId!]
+          : null,
+      onSaved: () {
+        if (mounted) setState(() {});
       },
     );
   }
 
-  // ---------- Categories management ----------
+  // ---- Subscription deletion helper ----
+  DateTime? _parseTimestamp(dynamic ts) {
+    if (ts == null) return null;
+    if (ts is int) return DateTime.fromMillisecondsSinceEpoch(ts);
+    if (ts is DateTime) return ts;
+    if (ts is String) return DateTime.tryParse(ts);
+    return null;
+  }
+
+  Future<void> _deleteSubscriptionSeriesIfNeededAndThen(dynamic key, Map<String, dynamic>? item) async {
+    try {
+      if (item == null) {
+        if (key != null) box.delete(key);
+        if (mounted) setState(() {});
+        return;
+      }
+
+      // Alterado: agora consideramos o flag 'isSubscription' como indicativo de assinatura,
+      // mantendo compatibilidade com registros antigos que tenham category == 'assinaturas'
+      final category = (_normalizeCategory(item['category'] ?? '')).toLowerCase();
+      final isSubscriptionFlag = item.containsKey('isSubscription') && (item['isSubscription'] == true || (item['isSubscription'] is String && (item['isSubscription'] as String).toLowerCase() == 'true'));
+      final isSubscriptionCategory = category == 'assinaturas';
+      final hasSeriesId = item['_seriesId'] != null;
+
+      if (!isSubscriptionFlag && !isSubscriptionCategory && !hasSeriesId) {
+        if (key != null) box.delete(key);
+        if (mounted) setState(() {});
+        return;
+      }
+
+      String? seriesId = item['_seriesId']?.toString();
+      dynamic masterKey = item['_seriesMasterKey'];
+
+      if (seriesId == null) {
+        final candidateCat = (item['category'] as String?) ?? '';
+        for (var k in box.keys) {
+          try {
+            final r = box.get(k);
+            if (r is Map) {
+              final m = Map<String, dynamic>.from(r);
+              if ((m['category'] ?? '') == candidateCat && m['_seriesId'] != null) {
+                seriesId = m['_seriesId']?.toString();
+                masterKey = m['_seriesMasterKey'] ?? k;
+                break;
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
+      if (seriesId == null) {
+        if (key != null) box.delete(key);
+        if (mounted) setState(() {});
+        return;
+      }
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Excluir assinatura e próximas?'),
+          content: const Text('Deseja excluir este registro e todas as próximas cópias da assinatura (a partir desta data)?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Excluir')),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final DateTime? baseTs = _parseTimestamp(item['timestamp']);
+      final keysToDelete = <dynamic>[];
+
+      for (var k in box.keys) {
+        try {
+          final r = box.get(k);
+          if (r is Map) {
+            final m = Map<String, dynamic>.from(r);
+            if (m['_seriesId'] != null && m['_seriesId'].toString() == seriesId) {
+              final DateTime? ts = _parseTimestamp(m['timestamp']);
+              if (baseTs != null && ts != null) {
+                if (!ts.isBefore(baseTs)) keysToDelete.add(k);
+              } else {
+                keysToDelete.add(k);
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (masterKey != null && !keysToDelete.contains(masterKey)) {
+        try {
+          final mr = box.get(masterKey);
+          if (mr is Map) {
+            final m = Map<String, dynamic>.from(mr);
+            final DateTime? mts = _parseTimestamp(m['timestamp']);
+            if (mts != null && baseTs != null) {
+              if (!mts.isBefore(baseTs)) keysToDelete.add(masterKey);
+            } else {
+              keysToDelete.add(masterKey);
+            }
+          }
+        } catch (_) {}
+      }
+
+      for (var k in keysToDelete) {
+        box.delete(k);
+      }
+
+      if (key != null && !keysToDelete.contains(key)) {
+        box.delete(key);
+      }
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('Erro ao deletar série de assinatura: $e');
+      if (key != null) {
+        box.delete(key);
+        if (mounted) setState(() {});
+      }
+    }
+  }
+
+  // ---- Categories management ----
   int _dedupeCategories() {
     final Map<dynamic, dynamic> map = Map<dynamic, dynamic>.from(categoriesBox.toMap());
     final Map<String, dynamic> seen = {};
@@ -1758,9 +1506,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
 
     if (confirmed == true) {
-      final removed = _dedupeCategories();
+      _dedupeCategories();
       if (mounted) setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Dedupe concluído — $removed duplicata(s) removida(s).')));
     }
   }
 
@@ -1819,9 +1566,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             }
                             if (keyToRemove != null) {
                               categoriesBox.delete(keyToRemove);
-                              setModal(() {}); // refresh modal UI
-                              if (mounted) setState(() {}); // refresh main UI
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Categoria "$c" excluída')));
+                              setModal(() {});
+                              if (mounted) setState(() {});
                             }
                           }
                         },
@@ -1851,9 +1597,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         newCtrl.clear();
                         setModal(() {});
                         if (mounted) setState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Categoria "$v" adicionada')));
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Categoria "$v" já existe')));
                       }
                     },
                     child: const Text('Adicionar'),
@@ -1868,21 +1611,73 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  // Escolhe ícone para chip de filtro de cartão
   IconData _cardFilterIcon(String name) {
     if (name == '(Todos)') return Icons.view_list;
     if (name == 'Sem cartão') return Icons.block;
     return Icons.credit_card;
   }
 
+  Widget _paymentMethodIcon(String method) {
+    switch (method) {
+      case 'Dinheiro/Pix':
+      case 'Dinheiro':
+        return const Icon(Icons.money, size: 16, color: Colors.green);
+      case 'Débito':
+        return const Icon(Icons.credit_card, size: 16, color: Colors.blue);
+      case 'Crédito':
+        return const Icon(Icons.payment, size: 16, color: Colors.deepPurple);
+      case 'Transferência':
+      case 'PIX':
+        return const Icon(Icons.swap_horiz, size: 16, color: Colors.teal);
+      default:
+        return const SizedBox(width: 16, height: 16);
+    }
+  }
+
+  DateTime _calculatePaymentDate(DateTime purchase, dynamic closingDayRaw, dynamic dueDayRaw) {
+    final closingDay = (closingDayRaw is int) ? closingDayRaw : int.tryParse(closingDayRaw?.toString() ?? '') ?? 1;
+    final dueDay = (dueDayRaw is int) ? dueDayRaw : int.tryParse(dueDayRaw?.toString() ?? '') ?? closingDay;
+    int targetYear = purchase.year;
+    int targetMonth = purchase.month;
+    if (purchase.day >= closingDay) {
+      final next = _addMonthsClamped(purchase, 1);
+      targetYear = next.year;
+      targetMonth = next.month;
+    }
+    final lastDay = DateTime(targetYear, targetMonth + 1, 0).day;
+    final day = dueDay.clamp(1, lastDay);
+    return DateTime(targetYear, targetMonth, day, 12, 0);
+  }
+
+  Widget _futureDivider(int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+      child: Row(
+        children: [
+          Icon(Icons.schedule, size: 16, color: Colors.orange.shade700),
+          const SizedBox(width: 6),
+          Text(
+            'Lançamentos futuros ($count)',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Colors.orange.shade700,
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Divider(thickness: 1, color: Colors.orange),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  // ---- BUILD ----
   @override
   Widget build(BuildContext context) {
     final availableCats = _availableCategories();
-    final items = _filteredFinanceItems();
-    final sumsByMethod = _sumByPaymentMethod(items);
-    final totalIncomes = _sumIncomes(items);
-    final totalExpenses = _sumExpenses(items);
-    final net = totalIncomes - totalExpenses;
 
     final List<String> periodOptions = [
       'Hoje',
@@ -1899,16 +1694,41 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Finanças'),
+          Text(widget.eventName ?? 'Finanças'),
           const SizedBox(height: 2),
           Text(_labelForPeriod(), style: const TextStyle(fontSize: 12, color: Colors.white70)),
         ]),
         actions: [
           IconButton(
+            tooltip: 'Eventos',
+            icon: const Icon(Icons.event_note),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FinanceEventsScreen(
+                    onOpenEvent: (eventId, eventName) async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FinanceScreen(
+                            eventId: eventId,
+                            eventName: eventName,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
             tooltip: 'Exportar CSV',
             icon: const Icon(Icons.download),
             onPressed: () {
-              final csv = _generateCsv(items);
+              final filtered = _filteredFinanceItemsWithTotal();
+              final csv = _generateCsv(filtered['items'] as List<Map<String, dynamic>>);
               showDialog(
                 context: context,
                 builder: (_) => AlertDialog(
@@ -1933,15 +1753,32 @@ class _FinanceScreenState extends State<FinanceScreen> {
             tooltip: 'Gráficos',
             icon: const Icon(Icons.pie_chart_outline),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              final filteredResult = _filteredFinanceItemsWithTotal();
+              final items =
+                  (filteredResult['items'] as List<Map<String, dynamic>>?) ?? [];
+              final runningTotal =
+                  (filteredResult['total'] as double?) ?? 0.0;
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FinanceChartsScreen(
+                    box: box,
+                    items: items,
+                    total: runningTotal,
+                  ),
                 ),
-                builder: (_) => FractionallySizedBox(
-                  heightFactor: 0.92,
-                  child: FinanceChartsModal(box: box),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Investimentos',
+            icon: const Icon(Icons.trending_up),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const InvestmentsScreen(),
                 ),
               );
             },
@@ -1956,7 +1793,6 @@ class _FinanceScreenState extends State<FinanceScreen> {
               PopupMenuItem(value: 'dedupe', child: Text('Limpar duplicatas de categorias')),
             ],
           ),
-          // manage cards quick access
           IconButton(
             tooltip: 'Cartões',
             icon: const Icon(Icons.credit_card),
@@ -1968,291 +1804,536 @@ class _FinanceScreenState extends State<FinanceScreen> {
         onPressed: () => _showAddOrEditExpense(context),
         child: const Icon(Icons.add),
       ),
-      body: Column(children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(children: [
-            IconButton(
-              icon: Icon(_filtersExpanded ? Icons.expand_less : Icons.expand_more),
-              tooltip: _filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros',
-              onPressed: () => setState(() => _filtersExpanded = !_filtersExpanded),
-            ),
-            DropdownButton<String>(
-              value: _dropdownValue,
-              items: periodOptions.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
-              onChanged: (v) async {
-                if (v == null) return;
-                setState(() {
-                  _dropdownValue = v;
-                });
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: box.listenable(),
+          builder: (context, Box b, _) {
+            final filteredResult = _filteredFinanceItemsWithTotal();
+            final items = filteredResult['items'] as List<Map<String, dynamic>>;
+            final runningTotal = (filteredResult['total'] as double?) ?? 0.0;
 
-                if (v == 'Hoje') {
-                  setState(() {
-                    _period = PeriodPreset.today;
-                    _advanced = AdvancedPeriod.none;
-                    _customRange = null;
-                    _selectedPeriodOption = _labelForPeriod();
-                  });
-                } else if (v == 'Semana') {
-                  setState(() {
-                    _period = PeriodPreset.week;
-                    _advanced = AdvancedPeriod.none;
-                    _customRange = null;
-                    _selectedPeriodOption = _labelForPeriod();
-                  });
-                } else if (v == 'Mês (escolher)') {
-                  await _pickMonthNamed();
-                } else if (v == 'Trimestre') {
-                  await _pickQuarter();
-                } else if (v == 'Semestre') {
-                  await _pickSemester();
-                } else if (v == 'Ano') {
-                  await _pickYear();
-                } else if (v == 'Personalizado') {
-                  await _pickCustomRange();
-                } else {
-                  setState(() {
-                    _selectedPeriodOption = _labelForPeriod();
-                  });
-                }
-              },
-            ),
-            const SizedBox(width: 8),
-            TextButton.icon(
-              onPressed: _pickCustomRange,
-              icon: const Icon(Icons.date_range, size: 18),
-              label: Text(_labelForPeriod()),
-            ),
-            const Spacer(),
-            IconButton(
-              tooltip: 'Limpar filtros',
-              icon: const Icon(Icons.clear),
-              onPressed: () {
-                setState(() {
-                  _period = PeriodPreset.today;
-                  _customRange = null;
-                  _advanced = AdvancedPeriod.none;
-                  _selectedCategory = null;
-                  _selectedCardType = null; // limpa filtro de cartão
-                  _search = '';
-                  _selectedPeriodOption = _labelForPeriod();
-                  _dropdownValue = 'Hoje';
-                });
-              },
-            ),
-          ]),
-        ),
+            final sumsByMethod = _sumByPaymentMethod(items);
+            final totalIncomes = _sumIncomes(items);
+            final totalExpenses = _sumExpenses(items);
+            final net = totalIncomes - totalExpenses;
 
-        AnimatedCrossFade(
-          firstChild: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: TextField(decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Buscar descrição...'), onChanged: (v) => setState(() => _search = v)),
-              ),
-              SizedBox(
-                height: 48,
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  scrollDirection: Axis.horizontal,
-                  children: availableCats.map((c) {
-                    final isAll = c == '(Todas)';
-                    final selected = (_selectedCategory ?? '(Todas)') == c;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(c),
-                        selected: selected,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedCategory = isAll ? null : c;
-                          });
-                        },
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
+            // ---- Lançamentos futuros (data acima do dia atual) ----
+            final now = DateTime.now();
+            final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+            final futureItems = items
+                .where((it) => (it['_ts'] as DateTime).isAfter(endOfToday))
+                .toList();
+            final currentItems = items
+                .where((it) => !(it['_ts'] as DateTime).isAfter(endOfToday))
+                .toList();
+            final futureExpenses = _sumExpenses(futureItems);
 
-              // --- Filtro por cartão (nome/descrição) com destaque de ícone ---
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 40,
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  scrollDirection: Axis.horizontal,
-                  children: availableCardFilters.map((c) {
-                    final isAll = c == '(Todos)';
-                    final selected = (_selectedCardType ?? '(Todos)') == c;
-                    final iconData = _cardFilterIcon(c);
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        avatar: Icon(iconData, size: 18, color: selected ? Colors.white : Colors.grey[700]),
-                        label: Text(c),
-                        selected: selected,
-                        selectedColor: Theme.of(context).colorScheme.primary,
-                        onSelected: (_) {
-                          setState(() {
-                            _selectedCardType = isAll ? null : c;
-                          });
-                        },
-                        labelStyle: TextStyle(color: selected ? Colors.white : null),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ]),
-          ),
-          secondChild: const SizedBox.shrink(),
-          crossFadeState: _filtersExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-          duration: const Duration(milliseconds: 200),
-        ),
 
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(
-              children: [
-                Expanded(child: Text('Resumo', style: Theme.of(context).textTheme.titleMedium)),
-                IconButton(
-                  icon: Icon(_summaryExpanded ? Icons.expand_less : Icons.expand_more),
-                  tooltip: _summaryExpanded ? 'Ocultar resumo' : 'Mostrar resumo',
-                  onPressed: () => setState(() => _summaryExpanded = !_summaryExpanded),
-                ),
-              ],
-            ),
-            AnimatedCrossFade(
-              firstChild: Card(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const Text('Receitas', style: TextStyle(fontSize: 14)),
-                        Text('R\$ ${totalIncomes.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                      ]),
-                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        const Text('Despesas', style: TextStyle(fontSize: 14)),
-                        Text('R\$ ${totalExpenses.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
-                      ]),
-                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        const Text('Saldo', style: TextStyle(fontSize: 14)),
-                        Text('R\$ ${net.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, color: net >= 0 ? Colors.green[700] : Colors.red[700])),
-                      ]),
-                    ]),
-                    const Divider(),
-                    ...paymentMethods.map((m) {
-                      final v = sumsByMethod[m] ?? 0.0;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
-                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Row(children: [
-                            _paymentMethodIcon(m),
-                            const SizedBox(width: 8),
-                            Text(m),
-                          ]),
-                          Text('R\$ ${v.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                        ]),
-                      );
-                    }).toList(),
-                  ]),
-                ),
-              ),
-              secondChild: const SizedBox.shrink(),
-              crossFadeState: _summaryExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-              duration: const Duration(milliseconds: 200),
-            ),
-          ]),
-        ),
-
-        const SizedBox(height: 6),
-        Expanded(
-          child: ValueListenableBuilder(
-            valueListenable: box.listenable(),
-            builder: (context, Box b, _) {
-              if (items.isEmpty) return Center(child: Text('Nenhum item encontrado para ${_labelForPeriod()}.'),);
-              return ListView.separated(
-                padding: const EdgeInsets.all(12),
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, i) {
-                  final item = items[i];
-                  final title = item['title'] as String? ?? '';
-                  final category = _normalizeCategory(item['category']);
-                  final ts = item['_ts'] as DateTime;
-                  final timeLabel = '${ts.day}/${ts.month}/${ts.year} ${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
-                  final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(title);
-                  final key = item['_key'];
-                  // ---------- Ajuste: mostra parcela somente quando os dois campos existem ----------
-                  final instNum = (item['installmentNumber'] is int) ? item['installmentNumber'] as int : null;
-                  final instTotal = (item['installmentTotal'] is int) ? item['installmentTotal'] as int : null;
-                  final installmentInfo = (instNum != null && instTotal != null) ? 'Parcela ${instNum}/${instTotal}' : '';
-                  final pm = (item['paymentMethod'] as String?) ?? '';
-                  final isIncomeItem = item['isIncome'] == true;
-                  final cardName = (item['cardName'] as String?) ?? '';
-
-                  return Dismissible(
-                    key: Key('$key-$i'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), color: Colors.redAccent, child: const Icon(Icons.delete, color: Colors.white)),
-                    onDismissed: (_) {
-                      if (key != null) b.delete(key);
-                      if (mounted) setState(() {});
-                    },
-                    child: ListTile(
-                      title: Text(title),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(installmentInfo.isNotEmpty ? '$category • $installmentInfo' : category),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              _paymentMethodIcon(pm),
-                              const SizedBox(width: 6),
-                              Flexible(child: Text(pm + (cardName.isNotEmpty ? ' • $cardName' : ''), style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis)),
-                              const SizedBox(width: 12),
-                              Text(timeLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            ],
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          IconButton(
+                            icon: Icon(_filtersExpanded ? Icons.expand_less : Icons.expand_more),
+                            tooltip: _filtersExpanded ? 'Ocultar filtros' : 'Mostrar filtros',
+                            onPressed: () => setState(() => _filtersExpanded = !_filtersExpanded),
                           ),
-                        ],
-                      ),
-                      trailing: Text(
-                        '${isIncomeItem ? '+' : ''}R\$ ${amt.toStringAsFixed(2)}',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: isIncomeItem ? Colors.green[700] : null),
-                      ),
-                      onTap: () {
-                        _showParcelOptions(context, key, item);
-                      },
+                          DropdownButton<String>(
+                            value: _dropdownValue,
+                            items: periodOptions.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+                            onChanged: (v) async {
+                              if (v == null) return;
+                              setState(() {
+                                _dropdownValue = v;
+                              });
+
+                              if (v == 'Hoje') {
+                                setState(() {
+                                  _period = PeriodPreset.today;
+                                  _advanced = AdvancedPeriod.none;
+                                  _customRange = null;
+                                  _selectedPeriodOption = _labelForPeriod();
+                                });
+                              } else if (v == 'Semana') {
+                                setState(() {
+                                  _period = PeriodPreset.week;
+                                  _advanced = AdvancedPeriod.none;
+                                  _customRange = null;
+                                  _selectedPeriodOption = _labelForPeriod();
+                                });
+                              } else if (v == 'Mês (escolher)') {
+                                await _pickMonthNamed();
+                              } else if (v == 'Trimestre') {
+                                await _pickQuarter();
+                              } else if (v == 'Semestre') {
+                                await _pickSemester();
+                              } else if (v == 'Ano') {
+                                await _pickYear();
+                              } else if (v == 'Personalizado') {
+                                await _pickCustomRange();
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          TextButton.icon(
+                            onPressed: _pickCustomRange,
+                            icon: const Icon(Icons.date_range, size: 18),
+                            label: Text(_labelForPeriod()),
+                          ),
+                          const Spacer(),
+                        ]),
+                        AnimatedCrossFade(
+                          firstChild: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 0),
+                            child: Column(children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: TextField(
+                                  decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Buscar descrição...'),
+                                  onChanged: (v) => setState(() => _search = v),
+                                ),
+                              ),
+                              SizedBox(
+                                height: 48,
+                                child: ListView(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  scrollDirection: Axis.horizontal,
+                                  children: availableCats.map((c) {
+                                    final isAll = c == '(Todas)';
+                                    final selected = (_selectedCategory ?? '(Todas)') == c;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: ChoiceChip(
+                                        label: Text(c),
+                                        selected: selected,
+                                        onSelected: (_) {
+                                          setState(() {
+                                            _selectedCategory = isAll ? null : c;
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 40,
+                                child: ListView(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  scrollDirection: Axis.horizontal,
+                                  children: availableCardFilters.map((c) {
+                                    final isAll = c == '(Todos)';
+                                    final selected = (_selectedCardType ?? '(Todos)') == c;
+                                    final iconData = _cardFilterIcon(c);
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 8),
+                                      child: ChoiceChip(
+                                        avatar: Icon(iconData, size: 18, color: selected ? Colors.white : Colors.grey[700]),
+                                        label: Text(c),
+                                        selected: selected,
+                                        selectedColor: Theme.of(context).colorScheme.primary,
+                                        onSelected: (_) {
+                                          setState(() {
+                                            _selectedCardType = isAll ? null : c;
+                                          });
+                                        },
+                                        labelStyle: TextStyle(color: selected ? Colors.white : null),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ]),
+                          ),
+                          secondChild: const SizedBox.shrink(),
+                          crossFadeState: _filtersExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                          duration: const Duration(milliseconds: 200),
+                        ),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(child: Text('Resumo', style: Theme.of(context).textTheme.titleMedium)),
+                            IconButton(
+                              icon: Icon(_summaryExpanded ? Icons.expand_less : Icons.expand_more),
+                              tooltip: _summaryExpanded ? 'Ocultar resumo' : 'Mostrar resumo',
+                              onPressed: () => setState(() => _summaryExpanded = !_summaryExpanded),
+                            ),
+                          ],
+                        ),
+                        AnimatedCrossFade(
+                          firstChild: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                    const Text('Receitas', style: TextStyle(fontSize: 14)),
+                                    Text('R\$ ${totalIncomes.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                                  ]),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      const Text('Despesas', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                      Text(
+                                        'R\$ ${(totalExpenses - futureExpenses).toStringAsFixed(2)}',
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text(
+                                        'Despesas futuras',
+                                        style: TextStyle(fontSize: 12, color: Colors.orange),
+                                      ),
+                                      Text(
+                                        'R\$ ${futureExpenses.toStringAsFixed(2)}',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      const Text('Total', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                      Text(
+                                        'R\$ ${totalExpenses.toStringAsFixed(2)}',
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                                    const Text('Saldo', style: TextStyle(fontSize: 14)),
+                                    Text('R\$ ${net.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, color: net >= 0 ? Colors.green[700] : Colors.red[700])),
+                                  ]),
+                                ]),
+                                const Divider(),
+                                ...paymentMethods.map((m) {
+                                  final v = sumsByMethod[m] ?? 0.0;
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+                                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                                      Row(children: [
+                                        _paymentMethodIcon(m),
+                                        const SizedBox(width: 8),
+                                        Text(m),
+                                      ]),
+                                      Text('R\$ ${v.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                                    ]),
+                                  );
+                                }).toList(),
+                              ]),
+                            ),
+                          ),
+                          secondChild: const SizedBox.shrink(),
+                          crossFadeState: _summaryExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                          duration: const Duration(milliseconds: 200),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                  ),
+                ),
+
+                
+
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                      if (items.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: Text('Nenhum item encontrado para ${_labelForPeriod()}.'),),
+                        );
+                      }
+
+                      final hasDivider = futureItems.isNotEmpty;
+                      final dividerIndex = hasDivider ? futureItems.length : -1;
+                      final footerIndex = items.length + (hasDivider ? 1 : 0);
+
+                      if (hasDivider && index == dividerIndex) {
+                        return _futureDivider(futureItems.length);
+                      }
+
+                      if (index == footerIndex) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Card(
+                            color: Theme.of(context).colorScheme.surface,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Total do Período (incl. diferidos)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                  Text('R\$ ${runningTotal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final Map<String, dynamic> item;
+                      if (hasDivider) {
+                        if (index < dividerIndex) {
+                          item = futureItems[index];
+                        } else {
+                          item = currentItems[index - dividerIndex - 1];
+                        }
+                      } else {
+                        item = items[index];
+                      }
+                      final title = item['title'] as String? ?? '';
+                      final category = _normalizeCategory(item['category']);
+                      final ts = item['_ts'] as DateTime;
+                      final timeLabel = '${ts.day.toString().padLeft(2,'0')}/${ts.month.toString().padLeft(2,'0')}/${ts.year} ${ts.hour.toString().padLeft(2, '0')}:${ts.minute.toString().padLeft(2, '0')}';
+                      final amt = (item['amount'] is num) ? (item['amount'] as num).toDouble() : _extractAmount(title);
+                      final key = item['_key'];
+                      final instNum = (item['installmentNumber'] is int) ? item['installmentNumber'] as int : null;
+                      final instTotal = (item['installmentTotal'] is int) ? item['installmentTotal'] as int : null;
+                      final installmentInfo = (instNum != null && instTotal != null) ? 'Parcela ${instNum}/${instTotal}' : '';
+                      final pm = (item['paymentMethod'] as String?) ?? '';
+                      final isIncomeItem = item['isIncome'] == true;
+                      final cardName = (item['cardName'] as String?) ?? '';
+                      final isDeferred = item['_deferred'] == true;
+                      
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                        child: Dismissible(
+                          key: Key('$key-$index'),
+                          direction: DismissDirection.endToStart,
+                          background: Container(alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), color: Colors.redAccent, child: const Icon(Icons.delete, color: Colors.white)),
+                          onDismissed: (_) {
+                            _deleteSubscriptionSeriesIfNeededAndThen(key, item);
+                          },
+                          child: ListTile(
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    style: const TextStyle(fontSize: 16),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(installmentInfo.isNotEmpty ? '$category • $installmentInfo' : category),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    _paymentMethodIcon(pm),
+                                    const SizedBox(width: 6),
+                                    Flexible(child: Text(pm + (cardName.isNotEmpty ? ' • $cardName' : ''), style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                                    const SizedBox(width: 12),
+                                    Text(timeLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (isDeferred)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.blue.shade200),
+                                    ),
+                                    child: Text(
+                                      'DIFERIDO',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.blue.shade700),
+                                    ),
+                                  ),
+                                
+                                Text(
+                                  '${isIncomeItem ? '+' : ''}R\$ ${amt.toStringAsFixed(2)}',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: isIncomeItem ? Colors.green[700] : null),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              _showParcelOptions(context, key, item);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: items.isEmpty ? 1 : items.length + 1 + (futureItems.isEmpty ? 0 : 1),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            );
+          },
         ),
-      ]),
+      ),
     );
   }
+}
 
-  Widget _paymentMethodIcon(String method) {
-    switch (method) {
-      case 'Dinheiro/Pix':
-      case 'Dinheiro':
-        return const Icon(Icons.money, size: 16, color: Colors.green);
-      case 'Débito':
-        return const Icon(Icons.credit_card, size: 16, color: Colors.blue);
-      case 'Crédito':
-        return const Icon(Icons.payment, size: 16, color: Colors.deepPurple);
-      case 'Transferência':
-      case 'PIX':
-        return const Icon(Icons.swap_horiz, size: 16, color: Colors.teal);
-      default:
-        return const SizedBox(width: 16, height: 16);
+// =====================================================================
+// Formulário de registro financeiro compartilhado.
+// Usado pela tela de Finanças e pela Home (Adicionar rapidamente).
+// =====================================================================
+
+List<Map<String, dynamic>> availableFinanceCards() {
+  final cardsBox = Hive.box('cards');
+  final out = <Map<String, dynamic>>[];
+  for (var key in cardsBox.keys) {
+    final raw = cardsBox.get(key);
+    if (raw is Map) {
+      final m = Map<String, dynamic>.from(raw);
+      m['_key'] = key;
+      out.add(m);
     }
   }
+  out.sort((a, b) => (a['name'] as String).compareTo(b['name'] as String));
+  return out;
+}
+
+Future<String?> showFinanceCardForm(BuildContext context, dynamic hiveKey) async {
+  final cardsBox = Hive.box('cards');
+
+  final nameCtrl = TextEditingController();
+  String type = 'Crédito';
+  int closingDay = 1;
+
+  if (hiveKey != null) {
+    final existing = Map<String, dynamic>.from(cardsBox.get(hiveKey) as Map);
+    nameCtrl.text = (existing['name'] ?? '') as String;
+    type = (existing['type'] ?? 'Crédito') as String;
+    closingDay = (existing['closingDay'] is int) ? (existing['closingDay'] as int) : 1;
+  }
+
+  return await showModalBottomSheet<String?>(
+    context: context,
+    isScrollControlled: true,
+    builder: (bctx) {
+      return StatefulBuilder(builder: (ctx, setModal) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(bctx).viewInsets.bottom),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    hiveKey == null ? 'Novo cartão' : 'Editar cartão',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nome do cartão')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: type,
+                    items: const [
+                      DropdownMenuItem(value: 'Crédito', child: Text('Crédito')),
+                      DropdownMenuItem(value: 'Débito', child: Text('Débito')),
+                    ],
+                    onChanged: (v) {
+                      setModal(() {
+                        type = v ?? 'Crédito';
+                      });
+                    },
+                    decoration: const InputDecoration(labelText: 'Tipo'),
+                  ),
+                  const SizedBox(height: 12),
+                  if (type == 'Crédito') ...[
+                    DropdownButtonFormField<int>(
+                      value: closingDay,
+                      items: List.generate(31, (i) => i + 1).map((d) {
+                        return DropdownMenuItem(value: d, child: Text(d.toString()));
+                      }).toList(),
+                      onChanged: (v) {
+                        setModal(() {
+                          closingDay = v ?? 1;
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Dia de virada do ciclo'),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      child: Text(hiveKey == null ? 'Criar' : 'Salvar'),
+                      onPressed: () {
+                        final nm = nameCtrl.text.trim();
+                        if (nm.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Informe o nome do cartão')),
+                          );
+                          return;
+                        }
+
+                        final id = hiveKey ?? DateTime.now().millisecondsSinceEpoch.toString();
+                        final card = {
+                          'id': id,
+                          'name': nm,
+                          'type': type,
+                          'closingDay': type == 'Crédito' ? closingDay : null,
+                        };
+
+                        cardsBox.put(id, card);
+                        Navigator.of(bctx).pop(id);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      });
+    },
+  );
+}
+
+Future<void> showFinanceRecordForm(
+  BuildContext context, {
+  dynamic key,
+  Map<String, dynamic>? existing,
+  String? initialDescription,
+  List<String>? initialEventIds,
+  VoidCallback? onSaved,
+}) async {
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: 16,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+        ),
+        child: FinanceRecordForm(
+          recordKey: key,
+          existing: existing,
+          initialDescription: initialDescription,
+          // A tela (FinanceScreen) decide os eventos iniciais;
+          // esta função não pode acessar `widget` por estar fora da classe.
+          initialEventIds: existing == null ? initialEventIds : null,
+          onSaved: onSaved,
+          availableCards: availableFinanceCards,
+          showCardForm: (hiveKey) => showFinanceCardForm(context, hiveKey),
+        ),
+      );
+    },
+  );
 }

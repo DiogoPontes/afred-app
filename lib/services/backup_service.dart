@@ -1,144 +1,140 @@
+// lib/services/backup_service.dart
 import 'dart:convert';
-import 'package:flutter/services.dart';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:hive_flutter/hive_flutter.dart';
 
 class BackupService {
-  static const List<String> boxNames = [
+  BackupService._();
+
+  /// Boxes incluídas no backup.
+  /// IMPORTANTE: sempre que criar uma box nova no app,
+  /// adicione o nome dela nesta lista.
+  static const List<String> _boxNames = [
     'alfred_box',
-    'alfred_sessions',
-    'alfred_modules',
-    'alfred_finance_categories',
-    'cards',
-    'activities',
+    'alfred_study_types',
+    'alfred_study_activities',
+    'alfred_study_schedules',
+    'alfred_study_disciplines',
+    'alfred_reading_books',
+    'alfred_reading_activities',
     'activity_logs',
-    'alfred_detect_rules',
+    'meal_types',
+    'activities',
+    'cards',
+    'workout_plans',
+    'alfred_finance_categories',
+    'alfred_shopping_products',
+    'alfred_shopping_list',
+    'alfred_shopping_saved',
   ];
 
-  static Future<Map<String, dynamic>> exportBackupMap() async {
-    final result = <String, dynamic>{
-      'version': 1,
+  // ═══════════════════════════════════════════════════════════════════════
+  // Export
+  // ═══════════════════════════════════════════════════════════════════════
+
+  static Future<String> exportBackupJson() async {
+    final boxes = <String, dynamic>{};
+
+    for (final name in _boxNames) {
+      final box = await _openBox(name);
+
+      final entries = <String, dynamic>{};
+      for (final key in box.keys) {
+        entries[_encodeKey(key)] = box.get(key);
+      }
+
+      boxes[name] = entries;
+    }
+
+    final payload = <String, dynamic>{
+      'version': 2,
       'exportedAt': DateTime.now().toIso8601String(),
-      'boxes': <String, dynamic>{},
-      'skipped': <String>[],
+      'boxes': boxes,
     };
 
-    final boxesMap = result['boxes'] as Map<String, dynamic>;
-    final skipped = result['skipped'] as List<String>;
+    return jsonEncode(payload);
+  }
 
-    for (final boxName in boxNames) {
-      try {
-        Box box;
-        if (Hive.isBoxOpen(boxName)) {
-          box = Hive.box(boxName);
-        } else {
-          box = await Hive.openBox(boxName);
-        }
+  // ═══════════════════════════════════════════════════════════════════════
+  // Restore
+  // ═══════════════════════════════════════════════════════════════════════
 
-        final entries = <Map<String, dynamic>>[];
+  static Future<Map<String, int>> restoreFromJson(String jsonString) async {
+    final decoded = jsonDecode(jsonString);
 
-        for (final key in box.keys) {
-          final value = box.get(key);
-          entries.add({
-            'key': key,
-            'value': _normalize(value),
-          });
-        }
+    if (decoded is! Map<String, dynamic> ||
+        !decoded.containsKey('boxes')) {
+      throw const FormatException('Backup inválido.');
+    }
 
-        boxesMap[boxName] = entries;
-      } catch (e) {
-        skipped.add(boxName);
-        continue;
+    final boxes = decoded['boxes'] as Map<String, dynamic>;
+
+    var boxCount = 0;
+    var recordCount = 0;
+
+    for (final name in _boxNames) {
+      final rawEntries = boxes[name];
+      if (rawEntries == null) continue;
+
+      final entries = (rawEntries as Map).cast<String, dynamic>();
+      final box = await _openBox(name);
+
+      await box.clear();
+
+      for (final entry in entries.entries) {
+        await box.put(_decodeKey(entry.key), entry.value);
+        recordCount++;
       }
+
+      boxCount++;
     }
 
-    return result;
-  }
-
-  static Future<String> exportBackupJson({bool pretty = true}) async {
-    final data = await exportBackupMap();
-    if (pretty) {
-      return const JsonEncoder.withIndent('  ').convert(data);
-    }
-    return jsonEncode(data);
-  }
-
-  static Future<void> restoreFromJsonString(
-    String jsonString, {
-    bool clearBeforeRestore = true,
-  }) async {
-    final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-    final boxesData = Map<String, dynamic>.from(decoded['boxes'] as Map? ?? {});
-
-    for (final boxName in boxNames) {
-      try {
-        Box box;
-        if (Hive.isBoxOpen(boxName)) {
-          box = Hive.box(boxName);
-        } else {
-          box = await Hive.openBox(boxName);
-        }
-
-        if (clearBeforeRestore) {
-          await box.clear();
-        }
-
-        final rawEntries = (boxesData[boxName] as List?) ?? const [];
-
-        for (final raw in rawEntries) {
-          final entry = Map<String, dynamic>.from(raw as Map);
-          await box.put(entry['key'], _denormalize(entry['value']));
-        }
-      } catch (e) {
-        continue;
-      }
-    }
-  }
-
-  static Future<void> restoreFromAsset(
-    String assetPath, {
-    bool clearBeforeRestore = true,
-  }) async {
-    final jsonString = await rootBundle.loadString(assetPath);
-    await restoreFromJsonString(
-      jsonString,
-      clearBeforeRestore: clearBeforeRestore,
+    debugPrint(
+      'Restore concluído: $boxCount box(es) e $recordCount registro(s).',
     );
+
+    return {'boxes': boxCount, 'records': recordCount};
   }
 
-  static dynamic _normalize(dynamic value) {
-    if (value is DateTime) {
-      return {
-        '__type': 'datetime',
-        'value': value.toIso8601String(),
-      };
-    }
-
-    if (value is Map) {
-      return value.map((key, val) => MapEntry(key.toString(), _normalize(val)));
-    }
-
-    if (value is List) {
-      return value.map(_normalize).toList();
-    }
-
-    return value;
+  static Future<void> restoreFromAsset(String path) async {
+    final json = await rootBundle.loadString(path);
+    await restoreFromJson(json);
   }
 
-  static dynamic _denormalize(dynamic value) {
-    if (value is Map) {
-      final map = Map<String, dynamic>.from(value);
+  // ═══════════════════════════════════════════════════════════════════════
+  // Helpers
+  // ═══════════════════════════════════════════════════════════════════════
 
-      if (map['__type'] == 'datetime') {
-        return DateTime.parse(map['value'] as String);
-      }
+  static Future<Box> _openBox(String name) async {
+    if (Hive.isBoxOpen(name)) return Hive.box(name);
+    return Hive.openBox(name);
+  }
 
-      return map.map((key, val) => MapEntry(key, _denormalize(val)));
+  /// Codifica a chave junto com o tipo, para restaurar com o tipo correto.
+  /// Ex.: chave int 3 → "int|3"; chave String "study_done_5_20260909"
+  /// → "String|study_done_5_20260909".
+  static String _encodeKey(dynamic key) => '${key.runtimeType}|$key';
+
+  static dynamic _decodeKey(String encoded) {
+    final separator = encoded.indexOf('|');
+
+    // Compatibilidade com backups antigos, sem prefixo de tipo.
+    if (separator < 0) {
+      return int.tryParse(encoded) ?? encoded;
     }
 
-    if (value is List) {
-      return value.map(_denormalize).toList();
-    }
+    final type = encoded.substring(0, separator);
+    final value = encoded.substring(separator + 1);
 
-    return value;
+    switch (type) {
+      case 'int':
+        return int.tryParse(value) ?? value;
+      case 'double':
+        return double.tryParse(value) ?? value;
+      default:
+        return value;
+    }
   }
 }

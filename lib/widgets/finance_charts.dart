@@ -1,321 +1,357 @@
 // lib/widgets/finance_charts.dart
-import 'dart:math';
 
-import 'package:fl_chart/fl_chart.dart';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-class FinanceChartsModal extends StatefulWidget {
-  final Box box; // caixa Hive onde estão os registros
-  const FinanceChartsModal({Key? key, required this.box}) : super(key: key);
+/// Tela completa (full screen) que mostra gráficos/estatísticas financeiras.
+/// Aceita opcionalmente uma lista de items filtrados e um total calculado.
+class FinanceChartsScreen extends StatefulWidget {
+  final Box box;
+  final List<Map<String, dynamic>>? items;
+  final double? total;
+
+  const FinanceChartsScreen({Key? key, required this.box, this.items, this.total}) : super(key: key);
 
   @override
-  State<FinanceChartsModal> createState() => _FinanceChartsModalState();
+  State<FinanceChartsScreen> createState() => _FinanceChartsScreenState();
 }
 
-class _FinanceChartsModalState extends State<FinanceChartsModal> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  DateTime _monthRef = DateTime.now(); // mês selecionado para pizza
-  int _daysWindow = 30;
-  int _monthsWindow = 6;
+class _FinanceChartsScreenState extends State<FinanceChartsScreen> {
+  late List<Map<String, dynamic>> _items;
+  late double _total;
+
+  LinkedHashMap<String, double> _byCategory = LinkedHashMap();
+
+  // UI state
+  int _touchedPieIndex = -1;
+
+  // Active toggles
+  final Map<String, bool> _activeCategory = {};
+
+  final currencyFormatter = NumberFormat.simpleCurrency(locale: 'pt_BR');
+
+  final List<Color> _palette = [
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+    Colors.red,
+    Colors.teal,
+    Colors.brown,
+    Colors.cyan,
+    Colors.indigo,
+    Colors.lime,
+    Colors.pink,
+    Colors.amber,
+    Colors.grey,
+    Colors.deepPurple,
+  ];
+
+  // Max distinct slices before grouping into "Outros"
+  final int _maxSlicesBeforeGrouping = 14;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+
+    if (widget.items != null) {
+      _items = widget.items!.map((e) => Map<String, dynamic>.from(e)).toList();
+      _total = _calculateTotalFromItems(_items);
+    } else {
+      _loadFromBox();
+    }
+
+    _aggregateAll();
+    _initActiveMaps();
   }
 
-  List<Map<String, dynamic>> _financeItems() {
-    final List<Map<String, dynamic>> out = [];
-    for (var k in widget.box.keys) {
-      final raw = widget.box.get(k);
-      if (raw is Map) {
-        final m = (raw['module'] as String?) ?? '';
-        if (m.toLowerCase() == 'finanças') {
-          final Map<String, dynamic> item = Map<String, dynamic>.from(raw);
-          dynamic t = item['timestamp'];
-          DateTime? ts;
-          if (t is String) ts = DateTime.tryParse(t);
-          else if (t is int) ts = DateTime.fromMillisecondsSinceEpoch(t);
-          else if (t is DateTime) ts = t;
-          item['_ts'] = ts?.toLocal();
-          out.add(item);
-        }
+  // -----------------------
+  // Parsing utilities
+  // -----------------------
+  dynamic _valueFromItem(Map<String, dynamic> it) {
+    const candidates = [
+      'amount',
+      'value',
+      'valor',
+      'amount_value',
+      'amountValue',
+      'amt',
+      'valor_num'
+    ];
+    for (final k in candidates) {
+      if (it.containsKey(k) && it[k] != null) return it[k];
+    }
+    for (final entry in it.entries) {
+      final key = entry.key.toLowerCase();
+      if (key.contains('amount') || key.contains('val') || key.contains('quant')) {
+        if (entry.value != null) return entry.value;
       }
     }
-    return out;
+    return 0;
   }
 
-  // Agrega por categoria para o mês referência (pizza)
-  Map<String, double> _aggregateByCategoryForMonth(DateTime month) {
-    final items = _financeItems();
-    final Map<String, double> agg = {};
-    final start = DateTime(month.year, month.month, 1);
-    final end = DateTime(month.year, month.month + 1, 1).subtract(const Duration(milliseconds: 1));
-    for (var it in items) {
-      final ts = it['_ts'] as DateTime?;
-      if (ts == null) continue;
-      if (ts.isBefore(start) || ts.isAfter(end)) continue;
-      final isIncome = it['isIncome'] as bool? ?? false;
-      final amount = (it['amount'] as num?)?.toDouble() ?? 0.0;
-      final category = ((it['category'] as String?)?.isNotEmpty ?? false) ? it['category'] as String : 'Sem categoria';
-      if (isIncome) continue; // pulando receitas na pizza -> focando despesas
-      agg[category] = (agg[category] ?? 0) + amount;
+  double _numFromDynamic(dynamic v) {
+    if (v == null) return 0.0;
+    if (v is num) return v.toDouble();
+    String s = v.toString().trim();
+    if (s.isEmpty) return 0.0;
+    s = s.replaceAll(RegExp(r'[^\d\-,.]'), '');
+    if (s.contains('.') && s.contains(',')) {
+      s = s.replaceAll('.', '').replaceAll(',', '.');
+    } else {
+      s = s.replaceAll(',', '.');
     }
-    return agg;
+    if (s == '-' || s == '') return 0.0;
+    return double.tryParse(s) ?? 0.0;
   }
 
-  // Agrega por dia para últimos N dias (linha)
-  Map<DateTime, double> _aggregateDaily(int days) {
-    final items = _financeItems();
-    final Map<DateTime, double> agg = {};
-    final today = DateTime.now();
-    final start = DateTime(today.year, today.month, today.day).subtract(Duration(days: days - 1));
-    for (int i = 0; i < days; i++) {
-      final d = DateTime(start.year, start.month, start.day + i);
-      agg[d] = 0.0;
+  double _calculateTotalFromItems(List<Map<String, dynamic>> items) {
+    double t = 0.0;
+    for (final it in items) t += _numFromDynamic(_valueFromItem(it));
+    return t;
+  }
+
+  // -----------------------
+  // Load & aggregate
+  // -----------------------
+  void _loadFromBox() {
+    _items = [];
+    _total = 0.0;
+    try {
+      final raw = widget.box.values.toList();
+      for (final r in raw) {
+        if (r is Map) _items.add(Map<String, dynamic>.from(r as Map));
+        else if (r is Map<String, dynamic>) _items.add(Map<String, dynamic>.from(r));
+      }
+      _total = _calculateTotalFromItems(_items);
+    } catch (e) {
+      _items = [];
+      _total = 0.0;
     }
-    for (var it in items) {
-      final ts = it['_ts'] as DateTime?;
-      if (ts == null) continue;
-      final day = DateTime(ts.year, ts.month, ts.day);
-      if (!agg.containsKey(day)) continue;
-      final isIncome = it['isIncome'] as bool? ?? false;
-      final amount = (it['amount'] as num?)?.toDouble() ?? 0.0;
-      if (!isIncome) {
-        agg[day] = (agg[day] ?? 0) + amount;
+  }
+
+  void _aggregateAll() {
+    _byCategory = LinkedHashMap();
+
+    for (final it in _items) {
+      final cat = _stringFromField(it, ['category', 'categoria', 'cat']) ?? 'Sem categoria';
+      final val = _numFromDynamic(_valueFromItem(it));
+      _byCategory[cat] = (_byCategory[cat] ?? 0.0) + val;
+    }
+  }
+
+  String? _stringFromField(Map<String, dynamic> it, List<String> candidates) {
+    for (final k in candidates) {
+      if (it.containsKey(k) && it[k] != null) return it[k].toString();
+    }
+    for (final entry in it.entries) {
+      final key = entry.key.toLowerCase();
+      if (candidates.any((c) => key.contains(c.toLowerCase()))) {
+        if (entry.value != null) return entry.value.toString();
       }
     }
-    return agg;
+    return null;
   }
 
-  // Agrega por mês para últimos N meses (barra)
-  Map<String, double> _aggregateMonthly(int months) {
-    final items = _financeItems();
-    final Map<String, double> agg = {};
-    final now = DateTime.now();
-    for (int i = months - 1; i >= 0; i--) {
-      final m = DateTime(now.year, now.month - i, 1);
-      final key = '${m.year}-${m.month.toString().padLeft(2, '0')}';
-      agg[key] = 0.0;
-    }
-    for (var it in items) {
-      final ts = it['_ts'] as DateTime?;
-      if (ts == null) continue;
-      final key = '${ts.year}-${ts.month.toString().padLeft(2, '0')}';
-      if (!agg.containsKey(key)) continue;
-      final isIncome = it['isIncome'] as bool? ?? false;
-      final amount = (it['amount'] as num?)?.toDouble() ?? 0.0;
-      if (!isIncome) {
-        agg[key] = (agg[key] ?? 0) + amount;
-      }
-    }
-    return agg;
+  void _initActiveMaps() {
+    _activeCategory.clear();
+    _byCategory.keys.forEach((k) => _activeCategory[k] = true);
   }
 
-  // ---------- Widgets dos charts ----------
-  Widget _buildPieChart(Map<String, double> data) {
-    if (data.isEmpty) {
-      return const Center(child: Text('Sem despesas neste mês'));
+  // -----------------------
+  // Helpers
+  // -----------------------
+  List<MapEntry<String, double>> _sortedEntries(LinkedHashMap<String, double> map) {
+    final list = map.entries.toList();
+    list.sort((a, b) => b.value.compareTo(a.value));
+    return list;
+  }
+
+  List<MapEntry<String, double>> _activeEntries(LinkedHashMap<String, double> map, Map<String, bool> activeMap) {
+    final entries = _sortedEntries(map);
+    return entries.where((e) => activeMap[e.key] ?? true).toList();
+  }
+
+  // -----------------------
+  // Pie chart + legend (no duplicate legend)
+  // -----------------------
+  Widget _pieChartWithLegend({double height = 320}) {
+    if (_byCategory.isEmpty) return const Center(child: Text('Sem dados de categoria'));
+
+    final entriesAll = _sortedEntries(_byCategory);
+
+    // Decide grouping: if few categories, show all; if many, group after limit.
+    final shouldGroup = entriesAll.length > _maxSlicesBeforeGrouping;
+    final display = <MapEntry<String, double>>[];
+    if (!shouldGroup) {
+      display.addAll(entriesAll);
+    } else {
+      display.addAll(entriesAll.sublist(0, _maxSlicesBeforeGrouping));
+      final others = entriesAll.sublist(_maxSlicesBeforeGrouping).fold<double>(0.0, (p, e) => p + e.value);
+      if (others > 0) display.add(MapEntry('Outros', others));
     }
-    final total = data.values.fold(0.0, (a, b) => a + b);
+
+    // Build sections only for active display entries
+    final activeDisplay = display.where((e) => _activeCategory[e.key] ?? true).toList();
+    final totalActive = activeDisplay.fold<double>(0.0, (p, e) => p + e.value);
+
     final sections = <PieChartSectionData>[];
-    int i = 0;
-    final entries = data.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    for (var e in entries) {
-      final value = e.value;
-      final pct = total > 0 ? (value / total) * 100 : 0;
-      final color = Colors.primaries[i % Colors.primaries.length].withOpacity(0.8);
+    for (var i = 0; i < display.length; i++) {
+      final e = display[i];
+      final active = _activeCategory[e.key] ?? true;
+      if (!active) {
+        sections.add(PieChartSectionData(value: 0.0001, color: _palette[i % _palette.length].withOpacity(0.08), title: '', radius: 0));
+        continue;
+      }
+      final percent = totalActive > 0 ? e.value / totalActive : 0.0;
+      final isTouched = i == _touchedPieIndex;
       sections.add(PieChartSectionData(
-        color: color,
-        value: value,
-        title: '${pct.toStringAsFixed(0)}%',
-        radius: 60,
-        titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+        color: _palette[i % _palette.length],
+        value: e.value,
+        title: '${(percent * 100).toStringAsFixed(0)}%',
+        radius: isTouched ? 78 : 60,
+        titleStyle: TextStyle(fontSize: isTouched ? 14 : 12, color: Colors.white, fontWeight: FontWeight.bold),
       ));
-      i++;
     }
 
-    return Column(
-      children: [
-        SizedBox(height: 220, child: PieChart(PieChartData(sections: sections, centerSpaceRadius: 36))),
-        const SizedBox(height: 8),
-        Text('Distribuição por categoria — total R\$ ${total.toStringAsFixed(2)}'),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: entries.map((e) {
-            final idx = entries.indexOf(e);
-            final color = Colors.primaries[idx % Colors.primaries.length].withOpacity(0.8);
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(width: 12, height: 12, color: color),
-                const SizedBox(width: 6),
-                Text('${e.key} — R\$ ${e.value.toStringAsFixed(2)}'),
-                const SizedBox(width: 12),
-              ],
-            );
-          }).toList(),
-        )
-      ],
-    );
-  }
-
-  Widget _buildLineChart(Map<DateTime, double> daily) {
-    if (daily.isEmpty) return const Center(child: Text('Sem dados'));
-    final entries = daily.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
-    final spots = <FlSpot>[];
-    for (int i = 0; i < entries.length; i++) {
-      spots.add(FlSpot(i.toDouble(), (entries[i].value)));
-    }
-    final maxY = (entries.map((e) => e.value).fold(0.0, max) * 1.2).clamp(1.0, double.infinity);
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 220,
-          child: LineChart(
-            LineChartData(
-              gridData: FlGridData(show: true),
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 32,
-                    interval: max(1.0, spots.length / 6),
-                    getTitlesWidget: (value, meta) {
-                      final idx = value.toInt().clamp(0, entries.length - 1);
-                      final dt = entries[idx].key;
-                      return SideTitleWidget(
-                        axisSide: meta.axisSide,
-                        child: Text('${dt.day}/${dt.month}'),
-                      );
-                    },
-                  ),
-                ),
+    final legend = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: List.generate(display.length, (i) {
+        final e = display[i];
+        final active = _activeCategory[e.key] ?? true;
+        return InkWell(
+          onTap: () {
+            setState(() {
+              _activeCategory[e.key] = !active;
+              _touchedPieIndex = -1;
+            });
+          },
+          child: Opacity(
+            opacity: active ? 1.0 : 0.45,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6.0),
+              child: Row(
+                children: [
+                  Container(width: 14, height: 14, decoration: BoxDecoration(color: _palette[i % _palette.length], borderRadius: BorderRadius.circular(3))),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(e.key, overflow: TextOverflow.ellipsis)),
+                  const SizedBox(width: 8),
+                  Text(currencyFormatter.format(e.value), style: const TextStyle(fontWeight: FontWeight.w600)),
+                ],
               ),
-              minY: 0,
-              maxY: maxY,
-              lineBarsData: [
-                LineChartBarData(
-                  spots: spots,
-                  isCurved: true,
-                  dotData: FlDotData(show: false),
-                  belowBarData: BarAreaData(show: true, color: Colors.blue.withOpacity(0.2)),
-                  color: Colors.blueAccent,
+            ),
+          ),
+        );
+      }),
+    );
+
+    return LayoutBuilder(builder: (context, constraints) {
+      final isWide = constraints.maxWidth > 620;
+      return Card(
+        elevation: 0,
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(6.0),
+          child: isWide
+              ? Row(
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: SizedBox(
+                        height: height,
+                        child: PieChart(PieChartData(
+                          sections: sections,
+                          centerSpaceRadius: 48,
+                          sectionsSpace: 2,
+                          borderData: FlBorderData(show: false),
+                          pieTouchData: PieTouchData(touchCallback: (event, resp) {
+                            if (resp == null || resp.touchedSection == null) {
+                              setState(() => _touchedPieIndex = -1);
+                              return;
+                            }
+                            setState(() => _touchedPieIndex = resp.touchedSection!.touchedSectionIndex);
+                          }),
+                        )),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 4, child: SingleChildScrollView(child: legend)),
+                  ],
                 )
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text('Últimos ${entries.length} dias — despesas por dia'),
-      ],
-    );
-  }
-
-  Widget _buildBarChart(Map<String, double> monthly) {
-    if (monthly.isEmpty) return const Center(child: Text('Sem dados'));
-    final entries = monthly.entries.toList();
-    final maxY = (entries.map((e) => e.value).fold(0.0, max) * 1.2).clamp(1.0, double.infinity);
-    final groups = <BarChartGroupData>[];
-    for (int i = 0; i < entries.length; i++) {
-      groups.add(BarChartGroupData(
-        x: i,
-        barsSpace: 4,
-        barRods: [
-          BarChartRodData(toY: entries[i].value, color: Colors.deepOrangeAccent, width: 16),
-        ],
-      ));
-    }
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 220,
-          child: BarChart(
-            BarChartData(
-              maxY: maxY,
-              barGroups: groups,
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      final idx = value.toInt().clamp(0, entries.length - 1);
-                      final label = entries[idx].key.split('-');
-                      final y = label[0];
-                      final m = int.tryParse(label[1]) ?? 1;
-                      return SideTitleWidget(
-                        axisSide: meta.axisSide,
-                        child: Text(
-                          '$m/$y',
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                      );
-                    },
-                    reservedSize: 36,
-                  ),
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: height,
+                      child: PieChart(PieChartData(
+                        sections: sections,
+                        centerSpaceRadius: 36,
+                        sectionsSpace: 2,
+                        borderData: FlBorderData(show: false),
+                        pieTouchData: PieTouchData(touchCallback: (event, resp) {
+                          if (resp == null || resp.touchedSection == null) {
+                            setState(() => _touchedPieIndex = -1);
+                            return;
+                          }
+                          setState(() => _touchedPieIndex = resp.touchedSection!.touchedSectionIndex);
+                        }),
+                      )),
+                    ),
+                    const SizedBox(height: 8),
+                    legend,
+                  ],
                 ),
-              ),
-            ),
-          ),
         ),
-        const SizedBox(height: 8),
-        Text('Últimos ${entries.length} meses — despesas por mês'),
-      ],
-    );
+      );
+    });
   }
 
+  Widget _sectionTitle(String title) {
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)));
+  }
+
+  // -----------------------
+  // Build
+  // -----------------------
   @override
   Widget build(BuildContext context) {
-    final byCategory = _aggregateByCategoryForMonth(_monthRef);
-    final daily = _aggregateDaily(_daysWindow);
-    final monthly = _aggregateMonthly(_monthsWindow);
+    _aggregateAll(); // refresh
+    // ensure active maps contain current keys (in case of data change)
+    _byCategory.keys.forEach((k) {
+      if (!_activeCategory.containsKey(k)) _activeCategory[k] = true;
+    });
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gráficos Financeiros'),
+        title: const Text('Gráficos e estatísticas'),
+        centerTitle: true,
         actions: [
-          IconButton(
-            tooltip: 'Escolher mês',
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _monthRef,
-                firstDate: DateTime.now().subtract(const Duration(days: 365 * 3)),
-                lastDate: DateTime.now().add(const Duration(days: 365)),
-                selectableDayPredicate: (d) => d.day == 1, // orientação apenas
-              );
-              if (picked != null) {
-                setState(() {
-                  _monthRef = DateTime(picked.year, picked.month, 1);
-                });
-              }
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Center(
+              child: Text(
+                currencyFormatter.format(_calculateTotalFromItems(_items)),
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.pie_chart), text: 'Categoria'),
-            Tab(icon: Icon(Icons.show_chart), text: 'Últimos 30d'),
-            Tab(icon: Icon(Icons.bar_chart), text: 'Últimos meses'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          SingleChildScrollView(padding: const EdgeInsets.all(12), child: _buildPieChart(byCategory)),
-          SingleChildScrollView(padding: const EdgeInsets.all(12), child: _buildLineChart(daily)),
-          SingleChildScrollView(padding: const EdgeInsets.all(12), child: _buildBarChart(monthly)),
-        ],
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(14.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle('Por Categoria'),
+              _pieChartWithLegend(height: 320),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
       ),
     );
   }

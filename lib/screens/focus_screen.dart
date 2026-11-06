@@ -8,27 +8,25 @@ import 'package:flutter/services.dart'; // SystemSound
 class FocusScreen extends StatefulWidget {
   final String taskTitle;
   final bool demoMode; // se true usa segundos para facilitar testes
-  final void Function(String summary)? onSaveSummary; // callback quando o usuário clica em "Resumo"
-  final VoidCallback? onMarkDone; // callback quando marca como concluída
 
   const FocusScreen({
     Key? key,
     required this.taskTitle,
     this.demoMode = false,
-    this.onSaveSummary,
-    this.onMarkDone,
   }) : super(key: key);
 
   @override
   State<FocusScreen> createState() => _FocusScreenState();
 }
 
-class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin {
+class _FocusScreenState extends State<FocusScreen>
+    with TickerProviderStateMixin {
   // Durations (em segundos quando demoMode == true, senão em segundos padrão convertidos)
   late int focusSec;
   late int shortBreakSec;
   late int longBreakSec;
   int cyclesToLong = 4;
+  int _focusElapsedSeconds = 0;
 
   // Estado do cronômetro
   String phase = 'focus'; // 'focus' | 'short' | 'long'
@@ -101,18 +99,34 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
   }
 
   void _startTicker() {
-    if (remaining <= 0) remaining = totalForPhase;
+    if (remaining <= 0) {
+      remaining = totalForPhase;
+    }
+
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        if (remaining > 0) {
-          remaining -= 1;
-        } else {
-          _timer?.cancel();
-          _onPhaseEnd();
-        }
-      });
-    });
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) {
+        if (!mounted) return;
+
+        setState(() {
+          // Conta somente o tempo efetivamente executado
+          // durante uma fase de foco.
+          if (phase == 'focus') {
+            _focusElapsedSeconds++;
+          }
+
+          if (remaining > 0) {
+            remaining -= 1;
+          } else {
+            _timer?.cancel();
+            _onPhaseEnd();
+          }
+        });
+      },
+    );
+
     setState(() {
       running = true;
     });
@@ -123,6 +137,21 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
     setState(() {
       running = false;
     });
+  }
+
+  /// Minutos estudados: somente fases de foco, sem as pausas.
+  int get _studiedMinutes => _focusElapsedSeconds ~/ 60;
+
+  /// Cancelar: volta para o formulário sem alterar nada.
+  void _cancel() {
+    _timer?.cancel();
+    Navigator.of(context).pop();
+  }
+
+  /// Salvar: volta para o formulário devolvendo os minutos estudados.
+  void _save() {
+    _timer?.cancel();
+    Navigator.of(context).pop(_studiedMinutes);
   }
 
   void _resetTimer() {
@@ -170,221 +199,276 @@ class _FocusScreenState extends State<FocusScreen> with TickerProviderStateMixin
     });
   }
 
-  void _markDone() {
-    // Aciona callback para permitir ao app marcar no Hive/outro local
-    setState(() {
-      rewards += 2; // bônus por marcar manualmente
-    });
-    widget.onMarkDone?.call();
-    // opcional: fechar tela após marcar
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tarefa marcada como concluída')));
-  }
-
-  void _saveSummary() {
-    final summary = 'Concluí $completedCycles ciclos e ganhei $rewards pontos com a tarefa: "${widget.taskTitle}".';
-    widget.onSaveSummary?.call(summary);
-    // padrão: mostrar um snack
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Resumo salvo/enviado')));
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateLabel = MaterialLocalizations.of(context).formatShortMonthDay(DateTime.now());
+    final dateLabel = MaterialLocalizations.of(context)
+        .formatShortMonthDay(DateTime.now());
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Modo Foco'),
-          Text(dateLabel, style: theme.textTheme.bodySmall),
-        ]),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Center(child: Text('$completedCycles / $cyclesToLong', style: const TextStyle(fontWeight: FontWeight.w600))),
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
+    return WillPopScope(
+      onWillPop: () async {
+        // Botão físico/gesto de voltar = Cancelar (não salva nada).
+        _cancel();
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false, // remove o botão de voltar
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título da tarefa
-              Text(widget.taskTitle, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 14),
-
-              // Card com timer
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.dividerColor, width: 0.5),
+              const Text('Modo Foco'),
+              Text(dateLabel, style: theme.textTheme.bodySmall),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Center(
+                child: Text(
+                  '$completedCycles / $cyclesToLong',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    // Circulo de progresso + tempo
-                    SizedBox(
-                      height: 220,
-                      child: Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 200,
-                              height: 200,
-                              child: CircularProgressIndicator(
-                                value: _progressValue().clamp(0.0, 1.0),
-                                strokeWidth: 10,
-                                backgroundColor: theme.dividerColor,
-                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-                              ),
-                            ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(_formatTime(remaining), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 6),
-                                Text(phase == 'focus' ? 'Foco' : (phase == 'short' ? 'Pausa curta' : 'Pausa longa'),
-                                    style: theme.textTheme.bodySmall),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+              ),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Column(
+              children: [
+                // Título da tarefa
+                Text(
+                  widget.taskTitle,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 14),
+
+                // Card com timer
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.dividerColor,
+                      width: 0.5,
                     ),
-
-                    // controles
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _startPause,
-                          child: Text(running ? 'Pausar' : 'Iniciar'),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(onPressed: _skip, child: const Text('Pular')),
-                        const SizedBox(width: 8),
-                        OutlinedButton(onPressed: _resetTimer, child: const Text('Reset')),
-                      ],
-                    ),
-
-                    const SizedBox(height: 8),
-                    // Alfred + dots + rewards
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 46,
-                              height: 46,
-                              decoration: BoxDecoration(
-                                color: theme.canvasColor,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: theme.dividerColor, width: 0.5),
-                              ),
-                              child: const Center(child: Text('🤵‍♂️', style: TextStyle(fontSize: 22))),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Alfred', style: TextStyle(fontWeight: FontWeight.w600)),
-                                Text('Apoia sua sessão', style: theme.textTheme.bodySmall),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            // dots
-                            Row(
-                              children: List.generate(cyclesToLong, (i) {
-                                final active = i < completedCycles;
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: active ? Colors.green : theme.dividerColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                );
-                              }),
-                            ),
-                            const SizedBox(height: 6),
-                            Text('Recompensas: $rewards ✨', style: theme.textTheme.bodySmall),
-                          ],
-                        )
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // opções: som / preset
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      // Circulo de progresso + tempo
+                      SizedBox(
+                        height: 220,
+                        child: Center(
+                          child: Stack(
+                            alignment: Alignment.center,
                             children: [
-                              Switch(
-                                value: soundOn,
-                                onChanged: (v) => setState(() => soundOn = v),
+                              SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: CircularProgressIndicator(
+                                  value: _progressValue().clamp(0.0, 1.0),
+                                  strokeWidth: 10,
+                                  backgroundColor: theme.dividerColor,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    theme.colorScheme.primary,
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 6),
-                              const Text('Som ambiente'),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _formatTime(remaining),
+                                    style: theme.textTheme.headlineSmall
+                                        ?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    phase == 'focus'
+                                        ? 'Foco'
+                                        : (phase == 'short'
+                                            ? 'Pausa curta'
+                                            : 'Pausa longa'),
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
+                      ),
 
-                        const SizedBox(width: 8),
-                        DropdownButton<String>(
-                          value: preset,
-                          items: const [
-                            DropdownMenuItem(value: 'demo', child: Text('Demonstração (25s)')),
-                            DropdownMenuItem(value: 'pomodoro', child: Text('Pomodoro (25m)')),
-                            DropdownMenuItem(value: 'short', child: Text('Foco curto (15m)')),
-                          ],
-                          onChanged: (v) {
-                            if (v == null) return;
-                            _applyPreset(v);
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Ações finais
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _markDone,
-                            child: const Text('Marcar como concluído'),
+                      // controles
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _startPause,
+                            child: Text(running ? 'Pausar' : 'Iniciar'),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _saveSummary,
-                            child: const Text('Resumo'),
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            onPressed: _skip,
+                            child: const Text('Pular'),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            onPressed: _resetTimer,
+                            child: const Text('Reset'),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 8),
+                      // Alfred + dots + rewards
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  color: theme.canvasColor,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: theme.dividerColor,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '🤵‍♂️',
+                                    style: TextStyle(fontSize: 22),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Alfred',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Apoia sua sessão',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // dots
+                              Row(
+                                children: List.generate(cyclesToLong, (i) {
+                                  final active = i < completedCycles;
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: active
+                                          ? Colors.green
+                                          : theme.dividerColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Recompensas: $rewards ✨',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // opções: som / preset
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Switch(
+                                  value: soundOn,
+                                  onChanged: (v) =>
+                                      setState(() => soundOn = v),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text('Som ambiente'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          DropdownButton<String>(
+                            value: preset,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'demo',
+                                child: Text('Demonstração (25s)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'pomodoro',
+                                child: Text('Pomodoro (25m)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'short',
+                                child: Text('Foco curto (15m)'),
+                              ),
+                            ],
+                            onChanged: (v) {
+                              if (v == null) return;
+                              _applyPreset(v);
+                            },
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Ações finais
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _cancel,
+                              child: const Text('Cancelar'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _save,
+                              child: const Text('Salvar'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

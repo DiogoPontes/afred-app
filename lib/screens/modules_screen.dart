@@ -6,6 +6,9 @@ import 'module_items_screen.dart';
 import 'activity_screen.dart';
 import 'food_screen.dart';
 import 'tasks_screen.dart';
+import 'reading_screen.dart';
+import 'study_screen.dart';
+import 'shopping_screen.dart';
 
 class ModulesScreen extends StatefulWidget {
   const ModulesScreen({Key? key}) : super(key: key);
@@ -20,18 +23,22 @@ class _ModulesScreenState extends State<ModulesScreen> {
   final List<String> defaultModules = [
     'Tarefas',
     'Estudos',
+    'Leitura',
     'Atividade Física',
     'Finanças',
     'Alimentação',
     'Compromissos',
+    'Compras',
   ];
 
   @override
   void initState() {
     super.initState();
     modulesBox = Hive.box('alfred_modules');
-    if (modulesBox.isEmpty) {
-      for (var m in defaultModules) {
+
+    // Adiciona apenas os módulos que estiverem faltando (não substitui entradas existentes)
+    for (var m in defaultModules) {
+      if (!modulesBox.values.contains(m)) {
         modulesBox.add(m);
       }
     }
@@ -170,13 +177,18 @@ class _ModulesScreenState extends State<ModulesScreen> {
   void _openModule(String moduleName) {
     if (moduleName == 'Finanças') {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FinanceScreen()));
+    } else if (moduleName == 'Leitura') {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ReadingScreen()));
     } else if (moduleName == 'Atividade Física' || moduleName == 'Exercício') {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ActivityScreen()));
     } else if (moduleName == 'Alimentação') {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FoodScreen()));
+    }  else if (moduleName == 'Estudos') {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const StudyScreen()));
     } else if (moduleName == 'Tarefas') {
       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TasksScreen()));
-    
+    } else if (moduleName == 'Compras') {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShoppingScreen()));
     } else {
       Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => ModuleItemsScreen(moduleName: moduleName)));

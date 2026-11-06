@@ -15,7 +15,11 @@ class _DetectRulesScreenState extends State<DetectRulesScreen> {
 
   // regras padrão por módulo
   static const Map<String, List<String>> _defaults = {
-    'Finanças':        ['gastei', 'r\$', 'reais', 'paguei', 'pagar', 'comprei'],
+    'Finanças': [
+      'gastei', 'gasto', 'r\$', 'reais', 'paguei', 'pagar', 'comprei',
+      'custou', 'recebi', 'ganhei', 'credito', 'debito', 'pix',
+      'dinheiro', 'cartao', 'fatura',
+    ],
     'Atividade Física':['corri', 'treino', 'academia', 'km', 'corrida', 'malhei', 'muscula', 'natação', 'ciclismo', 'yoga'],
     'Alimentação':     ['comi', 'almoç', 'jantar', 'lanche', 'pizza', 'refei'],
     'Estudos':         ['estud', 'prova', 'revisar', 'aula', 'curso'],
